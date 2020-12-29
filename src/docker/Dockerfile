@@ -9,6 +9,3 @@ RUN rm -r webapps/camunda-invoice
 
 # copy hassio engine plugin in lib folder (activated over bpm-platform.xml)
 COPY ./target/camunda-homeassist-plugin-1.0.0-SNAPSHOT.jar /camunda/lib/hassio-engine-plugin.jar
-
-# copy postgres driver in lib folder
-#COPY ./target/lib/postgres-driver.jar /camunda/lib/postgres-driver.jar
