@@ -13,11 +13,20 @@ public class HassioConnector extends AbstractConnector<HassioConnectorRequest, H
 
     @Override
     public HassioConnectorRequest createRequest() {
-        return null;
+        System.out.println("##################### CREATE REQUEST....");
+        return new HassioConnectorRequest(this);
     }
 
     @Override
     public ConnectorResponse execute(HassioConnectorRequest request) {
-        return null;
+        System.out.println("##################### EXECUTE.... " + request);
+
+        System.out.println("REQ PARAMS: " + request.getRequestParameters());
+
+        HassioConnectorResponse response = new HassioConnectorResponse();
+
+        response.getResponseParameters().put("respone", "Das soll einfach mal ein Ergebnis sein...");
+
+        return response;
     }
 }

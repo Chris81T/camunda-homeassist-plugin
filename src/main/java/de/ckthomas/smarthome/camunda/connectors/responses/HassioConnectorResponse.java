@@ -8,6 +8,7 @@ public class HassioConnectorResponse extends AbstractConnectorResponse {
 
     @Override
     protected void collectResponseParameters(Map<String, Object> responseParameters) {
+        System.out.println("##################### COLLECT RESPONSE PARAMS.... " + responseParameters);
 
     }
 }

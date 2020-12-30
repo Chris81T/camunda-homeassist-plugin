@@ -10,11 +10,13 @@ public class HassioConnectorProvider implements ConnectorProvider {
 
     @Override
     public String getConnectorId() {
+        System.out.println("##################### GET CONNECTOR ID.... ");
         return CONNECTOR_ID;
     }
 
     @Override
     public Connector<?> createConnectorInstance() {
+        System.out.println("##################### CREATE CONNECTOR INSTANCE.... ");
         return new HassioConnector(CONNECTOR_ID);
     }
 

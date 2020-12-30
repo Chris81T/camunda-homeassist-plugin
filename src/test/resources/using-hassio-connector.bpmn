@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_12uvs9d" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.4.0">
+  <bpmn:process id="Process_ConnectorTest" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_193a8lb</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_193a8lb" sourceRef="StartEvent_1" targetRef="Activity_RolladenHochfahren" />
+    <bpmn:sendTask id="Activity_RolladenHochfahren" name="Rolladen hochfahren">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="path">"helloWorld"</camunda:inputParameter>
+            <camunda:outputParameter name="response" />
+          </camunda:inputOutput>
+          <camunda:connectorId>hassio-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_193a8lb</bpmn:incoming>
+      <bpmn:outgoing>Flow_05z9rrb</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="Event_0aj6cjv">
+      <bpmn:incoming>Flow_15pxm21</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_05z9rrb" sourceRef="Activity_RolladenHochfahren" targetRef="Event_0dslqn0" />
+    <bpmn:sequenceFlow id="Flow_15pxm21" sourceRef="Event_0dslqn0" targetRef="Event_0aj6cjv" />
+    <bpmn:intermediateCatchEvent id="Event_0dslqn0" name="dummy wait">
+      <bpmn:incoming>Flow_05z9rrb</bpmn:incoming>
+      <bpmn:outgoing>Flow_15pxm21</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0pfnbck" messageRef="Message_0q6fajs" />
+    </bpmn:intermediateCatchEvent>
+  </bpmn:process>
+  <bpmn:message id="Message_0q6fajs" name="Message_1vrlbc8" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_ConnectorTest">
+      <bpmndi:BPMNEdge id="Flow_05z9rrb_di" bpmnElement="Flow_05z9rrb">
+        <di:waypoint x="370" y="117" />
+        <di:waypoint x="482" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_193a8lb_di" bpmnElement="Flow_193a8lb">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="270" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15pxm21_di" bpmnElement="Flow_15pxm21">
+        <di:waypoint x="518" y="117" />
+        <di:waypoint x="672" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_04r1da1_di" bpmnElement="Activity_RolladenHochfahren">
+        <dc:Bounds x="270" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0aj6cjv_di" bpmnElement="Event_0aj6cjv">
+        <dc:Bounds x="672" y="99" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="648" y="142" width="85" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_17w02mk_di" bpmnElement="Event_0dslqn0">
+        <dc:Bounds x="482" y="99" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="471" y="142" width="59" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
