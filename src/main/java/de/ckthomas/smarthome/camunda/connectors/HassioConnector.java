@@ -2,10 +2,23 @@ package de.ckthomas.smarthome.camunda.connectors;
 
 import de.ckthomas.smarthome.camunda.connectors.requests.HassioConnectorRequest;
 import de.ckthomas.smarthome.camunda.connectors.responses.HassioConnectorResponse;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.camunda.connect.impl.AbstractConnector;
 import org.camunda.connect.spi.ConnectorResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 public class HassioConnector extends AbstractConnector<HassioConnectorRequest, HassioConnectorResponse> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HassioConnector.class);
+
+    public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+
+    private OkHttpClient httpClient = new OkHttpClient();
 
     public HassioConnector(String connectorId) {
         super(connectorId);
@@ -13,15 +26,22 @@ public class HassioConnector extends AbstractConnector<HassioConnectorRequest, H
 
     @Override
     public HassioConnectorRequest createRequest() {
-        System.out.println("##################### CREATE REQUEST....");
+        LOGGER.info("Creating HassioConnector-Request");
         return new HassioConnectorRequest(this);
     }
 
     @Override
     public ConnectorResponse execute(HassioConnectorRequest request) {
-        System.out.println("##################### EXECUTE.... " + request);
+        Map<String, Object> requestParameters = request.getRequestParameters();
+        LOGGER.info("Executing operation. Given request = {}, given request parameters = {}", request,
+                requestParameters);
 
-        System.out.println("REQ PARAMS: " + request.getRequestParameters());
+        // https://square.github.io/okhttp/recipes/
+
+        Request httpRequest = new Request.Builder()
+                .url("")
+                .post(null)
+                .build();
 
         HassioConnectorResponse response = new HassioConnectorResponse();
 
