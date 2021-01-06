@@ -5,6 +5,7 @@ import de.ckthomas.smarthome.camunda.connectors.responses.HassioConnectorRespons
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import org.camunda.connect.impl.AbstractConnector;
 import org.camunda.connect.spi.ConnectorResponse;
 import org.slf4j.Logger;
@@ -38,9 +39,11 @@ public class HassioConnector extends AbstractConnector<HassioConnectorRequest, H
 
         // https://square.github.io/okhttp/recipes/
 
+        RequestBody body = null;
+
         Request httpRequest = new Request.Builder()
                 .url("")
-                .post(null)
+                .post(body)
                 .build();
 
         HassioConnectorResponse response = new HassioConnectorResponse();
