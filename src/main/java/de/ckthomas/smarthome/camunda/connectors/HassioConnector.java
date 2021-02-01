@@ -39,10 +39,10 @@ public class HassioConnector extends AbstractConnector<HassioConnectorRequest, H
 
         // https://square.github.io/okhttp/recipes/
 
-        RequestBody body = null;
+        RequestBody body = RequestBody.create("{'some':'json'}", JSON);
 
         Request httpRequest = new Request.Builder()
-                .url("")
+                .url("some url")
                 .post(body)
                 .build();
 
