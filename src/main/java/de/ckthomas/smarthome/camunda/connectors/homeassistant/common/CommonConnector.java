@@ -1,7 +1,5 @@
-package de.ckthomas.smarthome.camunda.connectors;
+package de.ckthomas.smarthome.camunda.connectors.homeassistant.common;
 
-import de.ckthomas.smarthome.camunda.connectors.requests.HassioConnectorRequest;
-import de.ckthomas.smarthome.camunda.connectors.responses.HassioConnectorResponse;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -13,26 +11,26 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-public class HassioConnector extends AbstractConnector<HassioConnectorRequest, HassioConnectorResponse> {
+public class CommonConnector extends AbstractConnector<CommonRequest, CommonResponse> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HassioConnector.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommonConnector.class);
 
     public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private OkHttpClient httpClient = new OkHttpClient();
 
-    public HassioConnector(String connectorId) {
+    public CommonConnector(String connectorId) {
         super(connectorId);
     }
 
     @Override
-    public HassioConnectorRequest createRequest() {
+    public CommonRequest createRequest() {
         LOGGER.info("Creating HassioConnector-Request");
-        return new HassioConnectorRequest(this);
+        return new CommonRequest(this);
     }
 
     @Override
-    public ConnectorResponse execute(HassioConnectorRequest request) {
+    public ConnectorResponse execute(CommonRequest request) {
         Map<String, Object> requestParameters = request.getRequestParameters();
         LOGGER.info("Executing operation. Given request = {}, given request parameters = {}", request,
                 requestParameters);
@@ -46,9 +44,9 @@ public class HassioConnector extends AbstractConnector<HassioConnectorRequest, H
                 .post(body)
                 .build();
 
-        HassioConnectorResponse response = new HassioConnectorResponse();
+        CommonResponse response = new CommonResponse();
 
-        response.getResponseParameters().put("respone", "Das soll einfach mal ein Ergebnis sein...");
+        response.getResponseParameters().put("response", "Das soll einfach mal ein Ergebnis sein...");
 
         return response;
     }
