@@ -29,7 +29,7 @@ public class RestService {
         this.authValue = authValue;
     }
 
-    Request.Builder createRequestBuilder(String url) {
+    public Request.Builder createRequestBuilder(String url) {
         final String prefix = basePath != null ? basePath + "/" : "";
         final Request.Builder builder = new Request.Builder()
                 .url(prefix + url);
@@ -39,21 +39,21 @@ public class RestService {
         return builder;
     }
 
-    Request createPostRequest(String url, String jsonBody) {
+    public Request createPostRequest(String url, String jsonBody) {
         return createRequestBuilder(url)
             .post(RequestBody.create(jsonBody, JSON))
             .build();
     }
 
-    Call createCall(Request request) {
+    public Call createCall(Request request) {
         return httpClient.newCall(request);
     }
 
-    Response execute(Request request) throws IOException {
+    public Response execute(Request request) throws IOException {
         return createCall(request).execute();
     }
 
-    Response execute(String url, String jsonBody) throws IOException {
+    public Response execute(String url, String jsonBody) throws IOException {
         return execute(createPostRequest(url, jsonBody));
     }
 

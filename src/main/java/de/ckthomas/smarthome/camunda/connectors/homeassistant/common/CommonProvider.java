@@ -1,6 +1,5 @@
 package de.ckthomas.smarthome.camunda.connectors.homeassistant.common;
 
-import de.ckthomas.smarthome.camunda.connectors.HassioConnector;
 import de.ckthomas.smarthome.camunda.connectors.homeassistant.HassioConsts;
 import org.camunda.connect.spi.Connector;
 import org.camunda.connect.spi.ConnectorProvider;
@@ -18,7 +17,7 @@ public class CommonProvider implements ConnectorProvider {
 
     @Override
     public Connector<?> createConnectorInstance() {
-        HassioConnector connector = new HassioConnector(getConnectorId());
+        CommonConnector connector = new CommonConnector(getConnectorId());
         LOGGER.debug("Creating new {} instance = {}", getClass().getSimpleName(), connector);
         return connector;
     }

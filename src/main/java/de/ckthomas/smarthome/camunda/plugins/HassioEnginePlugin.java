@@ -1,36 +1,37 @@
 package de.ckthomas.smarthome.camunda.plugins;
 
-import de.ckthomas.smarthome.camunda.listeners.HassioEngineListener;
 import org.camunda.bpm.engine.ProcessEngine;
-import org.camunda.bpm.engine.impl.bpmn.parser.BpmnParseListener;
 import org.camunda.bpm.engine.impl.cfg.AbstractProcessEnginePlugin;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Christian Thomas
  */
 public class HassioEnginePlugin extends AbstractProcessEnginePlugin {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(HassioEnginePlugin.class);
+
+    HassioEnginePlugin() {
+        LOGGER.info("About to instantiate HassioEnginePlugin...");
+    }
+
     @Override
     public void preInit(ProcessEngineConfigurationImpl processEngineConfiguration) {
-        List<BpmnParseListener> listeners = processEngineConfiguration.getCustomPreBPMNParseListeners();
-        if (listeners == null) {
-            listeners = new ArrayList<>();
-            processEngineConfiguration.setCustomPreBPMNParseListeners(listeners);
-        }
-        listeners.add(new HassioEngineListener());
+        super.preInit(processEngineConfiguration);
+        LOGGER.info("preInit. processEngineConfiguration = {}", processEngineConfiguration);
     }
 
     @Override
     public void postInit(ProcessEngineConfigurationImpl processEngineConfiguration) {
         super.postInit(processEngineConfiguration);
+        LOGGER.info("postInit. processEngineConfiguration = {}", processEngineConfiguration);
     }
 
     @Override
     public void postProcessEngineBuild(ProcessEngine processEngine) {
         super.postProcessEngineBuild(processEngine);
+        LOGGER.info("Process-Engine with name = {} is ready for work", processEngine.getName());
     }
 }

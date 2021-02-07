@@ -11,4 +11,4 @@ RUN rm -r webapps/camunda-invoice
 COPY ./target/camunda-homeassist-plugin-1.0.0-SNAPSHOT.jar /camunda/lib/hassio-engine-plugin.jar
 
 # copy serveral 3rd party libs
-COPY ./target/lib/okhttp.jar /camunda/lib/okhttp.jar
+COPY ./target/lib/ /camunda/lib/

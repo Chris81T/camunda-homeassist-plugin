@@ -1,31 +1,37 @@
 package de.ckthomas.smarthome.camunda.connectors.homeassistant.common;
 
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
+import de.ckthomas.smarthome.services.RestService;
+import de.ckthomas.smarthome.services.RestServiceFactory;
 import org.camunda.connect.impl.AbstractConnector;
 import org.camunda.connect.spi.ConnectorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Map;
 
+/**
+ * @author Christian Thomas
+ */
 public class CommonConnector extends AbstractConnector<CommonRequest, CommonResponse> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonConnector.class);
 
-    public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+    private final String basePath;
+    private final String authKey;
+    private final String authValue;
 
-    private OkHttpClient httpClient = new OkHttpClient();
 
-    public CommonConnector(String connectorId) {
+    public CommonConnector(String connectorId, String basePath, String authKey, String authValue) {
         super(connectorId);
+        this.basePath = basePath;
+        this.authKey = authKey;
+        this.authValue = authValue;
     }
 
     @Override
     public CommonRequest createRequest() {
-        LOGGER.info("Creating HassioConnector-Request");
+        LOGGER.debug("Creating CommonConnector-Request");
         return new CommonRequest(this);
     }
 
@@ -35,19 +41,18 @@ public class CommonConnector extends AbstractConnector<CommonRequest, CommonResp
         LOGGER.info("Executing operation. Given request = {}, given request parameters = {}", request,
                 requestParameters);
 
-        // https://square.github.io/okhttp/recipes/
+        final String url = (String) requestParameters.get("url");
+        final String jsonBody = (String) requestParameters.get("jsonBody");
 
-        RequestBody body = RequestBody.create("{'some':'json'}", JSON);
+        RestService service = RestServiceFactory.getInstance(basePath, authKey, authValue);
 
-        Request httpRequest = new Request.Builder()
-                .url("some url")
-                .post(body)
-                .build();
+        try {
+            service.execute(url, jsonBody);
+        } catch (IOException e) {
+            e.printStackTrace(); // Umgang hier?
+        }
 
         CommonResponse response = new CommonResponse();
-
-        response.getResponseParameters().put("response", "Das soll einfach mal ein Ergebnis sein...");
-
         return response;
     }
 }

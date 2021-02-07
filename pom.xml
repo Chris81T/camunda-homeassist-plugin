@@ -103,19 +103,11 @@
                     <execution>
                         <phase>prepare-package</phase>
                         <goals>
-                            <goal>copy</goal>
+                            <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>com.squareup.okhttp3</groupId>
-                                    <artifactId>okhttp</artifactId>
-                                    <version>4.9.0</version>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                                    <destFileName>okhttp.jar</destFileName>
-                                </artifactItem>
-                            </artifactItems>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <includeScope>runtime</includeScope>
                         </configuration>
                     </execution>
                 </executions>

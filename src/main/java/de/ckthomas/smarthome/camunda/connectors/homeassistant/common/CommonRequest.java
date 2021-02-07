@@ -1,6 +1,5 @@
 package de.ckthomas.smarthome.camunda.connectors.homeassistant.common;
 
-import de.ckthomas.smarthome.camunda.connectors.responses.HassioConnectorResponse;
 import org.camunda.connect.impl.AbstractConnectorRequest;
 import org.camunda.connect.spi.Connector;
 
