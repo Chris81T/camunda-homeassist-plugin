@@ -14,10 +14,10 @@ package de.ckthomas.smarthome.camunda.connectors.homeassistant.common;
 
 import org.camunda.connect.impl.AbstractRequestInvocation;
 import org.camunda.connect.spi.ConnectorRequestInterceptor;
-import java.util.Arrays;
 
 import java.util.List;
 
+@Deprecated(forRemoval = true)
 public class CommonInvocation extends AbstractRequestInvocation<String> {
 
   //protected final MailService mailService;

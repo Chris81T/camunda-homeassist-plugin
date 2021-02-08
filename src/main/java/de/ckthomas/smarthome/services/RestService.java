@@ -6,6 +6,7 @@ import java.io.IOException;
 
 /**
  * This facade provides common logic for a simpler usage.
+ * @author Christian Thomas
  */
 public class RestService {
 

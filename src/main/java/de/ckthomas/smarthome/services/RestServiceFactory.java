@@ -2,6 +2,7 @@ package de.ckthomas.smarthome.services;
 
 /**
  * This Factory provides a service client based on OkHttp3.
+ * @author Christian Thomas
  */
 public abstract class RestServiceFactory {
 

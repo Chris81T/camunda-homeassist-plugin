@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
+/**
+ * @author Christian Thomas
+ */
 public class CommonResponse extends AbstractConnectorResponse {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonResponse.class);
