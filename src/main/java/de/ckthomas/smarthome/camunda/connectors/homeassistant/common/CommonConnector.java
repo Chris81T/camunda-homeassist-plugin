@@ -55,17 +55,37 @@ public class CommonConnector extends AbstractConnector<CommonRequest, CommonResp
         return gson.toJson(map);
     }
 
-    protected ConnectorResponse perform(CommonRequest request, String jsonBody) {
+    /**
+     * basePath provides as value: "location:port/api/"
+     *
+     * https://developers.home-assistant.io/docs/api/rest/
+     * provides for the services part following url structure: "/api/services/<domain>/<service>"
+     * @return
+     */
+    protected String createUrl(String path, String domain, String service) {
+        return new StringBuilder()
+                .append(basePath)
+                .append(path)
+                .append("/")
+                .append(domain)
+                .append("/")
+                .append(service)
+                .toString();
+    }
+
+    protected String createServiceUrl(String domain, String service) {
+        return createUrl(HassioConsts.Common.PATH_SERVICES, domain, service);
+    }
+
+    protected ConnectorResponse perform(CommonRequest request, String url, String jsonBody) {
         try {
             Map<String, Object> requestParameters = request.getRequestParameters();
             LOGGER.info("Executing operation. Given request = {}, given request parameters = {}", request,
                     requestParameters);
 
-            final String url = (String) requestParameters.get(HassioConsts.Common.COMMON_KEY_URL);
-
-            final String basePath = checkParam(this.basePath, HassioConsts.Common.COMMON_BASE_PATH, requestParameters);
-            final String authKey = checkParam(this.authKey, HassioConsts.Common.COMMON_AUTH_KEY, requestParameters);
-            final String authValue = checkParam(this.authValue, HassioConsts.Common.COMMON_AUTH_VAL, requestParameters);
+            final String basePath = checkParam(this.basePath, HassioConsts.Common.BASE_PATH, requestParameters);
+            final String authKey = checkParam(this.authKey, HassioConsts.Common.AUTH_KEY, requestParameters);
+            final String authValue = checkParam(this.authValue, HassioConsts.Common.AUTH_VAL, requestParameters);
 
             RestService service = RestServiceFactory.getInstance(basePath, authKey, authValue);
 
@@ -86,7 +106,11 @@ public class CommonConnector extends AbstractConnector<CommonRequest, CommonResp
     @Override
     public ConnectorResponse execute(CommonRequest request) {
         Map<String, Object> requestParameters = request.getRequestParameters();
-        final String jsonBody = (String) requestParameters.get(HassioConsts.Common.COMMON_KEY_JSON_BODY);
-        return perform(request, jsonBody);
+        final String jsonBody = (String) requestParameters.get(HassioConsts.Common.KEY_JSON_BODY);
+        final String path = (String) requestParameters.get(HassioConsts.Common.KEY_URL_PATH);
+        final String domain = (String) requestParameters.get(HassioConsts.Common.KEY_URL_DOMAIN);
+        final String service = (String) requestParameters.get(HassioConsts.Common.KEY_URL_SERVICE);
+
+        return perform(request, createUrl(path, domain, service), jsonBody);
     }
 }

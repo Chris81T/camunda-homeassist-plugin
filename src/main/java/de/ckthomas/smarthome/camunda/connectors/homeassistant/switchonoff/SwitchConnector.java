@@ -1,6 +1,5 @@
 package de.ckthomas.smarthome.camunda.connectors.homeassistant.switchonoff;
 
-import camundajar.impl.scala.util.parsing.json.JSONObject;
 import de.ckthomas.smarthome.camunda.connectors.homeassistant.HassioConsts;
 import de.ckthomas.smarthome.camunda.connectors.homeassistant.common.CommonConnector;
 import de.ckthomas.smarthome.camunda.connectors.homeassistant.common.CommonRequest;
@@ -10,6 +9,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * https://www.home-assistant.io/integrations/switch
+ *
+ * service values: turn_on, turn_off, toggle
+ *
  * @author Christian Thomas
  */
 public class SwitchConnector extends CommonConnector {
@@ -21,11 +24,16 @@ public class SwitchConnector extends CommonConnector {
     @Override
     public ConnectorResponse execute(CommonRequest request) {
         Map<String, Object> requestParameters = request.getRequestParameters();
-        Map<String, String> map = new HashMap<>();
-        map.put(HassioConsts.Switch.SWITCH_KEY_ENTITY_ID,
-                (String) requestParameters.get(HassioConsts.Switch.SWITCH_KEY_ENTITY_ID));
-        final String jsonBody = toJson(map);
-        return super.perform(request, jsonBody);
+
+        final String service = (String) requestParameters.get(HassioConsts.Common.KEY_URL_SERVICE);
+        final String url = createServiceUrl(HassioConsts.Switch.DOMAIN, service);
+
+        Map<String, String> jsonMap = new HashMap<>();
+        jsonMap.put(HassioConsts.Switch.JSON_BODY_ENTITY_ID,
+                (String) requestParameters.get(HassioConsts.Switch.JSON_BODY_ENTITY_ID));
+        final String jsonBody = toJson(jsonMap);
+
+        return super.perform(request, url, jsonBody);
     }
 
 }

@@ -15,9 +15,9 @@ public class CommonProvider implements ConnectorProvider {
 
     protected final Logger LOGGER;
 
-    protected static final String authKey = System.getProperty(HassioConsts.Common.COMMON_AUTH_KEY);
-    protected static final String authVal = System.getProperty(HassioConsts.Common.COMMON_AUTH_VAL);
-    protected static final String basePath = System.getProperty(HassioConsts.Common.COMMON_BASE_PATH);
+    protected static final String authKey = System.getProperty(HassioConsts.Common.AUTH_KEY);
+    protected static final String authVal = System.getProperty(HassioConsts.Common.AUTH_VAL);
+    protected static final String basePath = System.getProperty(HassioConsts.Common.BASE_PATH);
 
     public CommonProvider() {
         this(CommonProvider.class);
@@ -29,9 +29,9 @@ public class CommonProvider implements ConnectorProvider {
                 "(use CATALINA_OPTS to set them). " +
                 "{}: {}, {}: {}, {}: {}", Arrays.asList(
                 getClass().getSimpleName(),
-                HassioConsts.Common.COMMON_AUTH_KEY, authKey,
-                HassioConsts.Common.COMMON_AUTH_VAL, authVal.substring(0, 10) + "...",
-                HassioConsts.Common.COMMON_BASE_PATH, basePath
+                HassioConsts.Common.AUTH_KEY, authKey,
+                HassioConsts.Common.AUTH_VAL, authVal.substring(0, 10) + "...",
+                HassioConsts.Common.BASE_PATH, basePath
         ).toArray());
     }
 
