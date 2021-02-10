@@ -8,6 +8,14 @@ public abstract class RestServiceFactory {
 
     private static RestService restService = null;
 
+    public static boolean isInstantiated() {
+        return restService != null;
+    }
+
+    public static boolean isNotInstantiated() {
+        return !isInstantiated();
+    }
+
     public static RestService getInstance() {
         return getInstance(null);
     }
@@ -17,7 +25,7 @@ public abstract class RestServiceFactory {
     }
 
     public static RestService getInstance(String basePath, String authKey, String authValue) {
-        if (restService == null) {
+        if (isNotInstantiated()) {
             restService = new RestService(basePath, authKey, authValue);
         }
         return restService;

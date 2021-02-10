@@ -27,6 +27,11 @@
 
             <!-- plugin enabling integration of camunda Spin -->
             <plugin>
+                <class>org.camunda.spin.plugin.impl.SpinProcessEnginePlugin</class>
+            </plugin>
+
+            <!-- plugin enabling connect support -->
+            <plugin>
                 <class>org.camunda.connect.plugin.impl.ConnectProcessEnginePlugin</class>
             </plugin>
 
@@ -34,6 +39,7 @@
             <plugin>
                 <class>de.ckthomas.smarthome.camunda.plugins.HassioEnginePlugin</class>
             </plugin>
+
 
             <!-- LDAP CONFIGURATION -->
             <!-- Uncomment this section in order to enable LDAP support for this process engine -->
@@ -61,15 +67,15 @@
 
                   <property name="groupSearchBase"></property>
                   <property name="groupSearchFilter">(objectclass=groupOfNames)</property>
-                      <property name="groupIdAttribute">cn</property>
-          <property name="groupNameAttribute">cn</property>
+                  <property name="groupIdAttribute">cn</property>
+                  <property name="groupNameAttribute">cn</property>
 
-          <property name="groupMemberAttribute">member</property>
-          <property name="sortControlSupported">false</property>
+                  <property name="groupMemberAttribute">member</property>
+                  <property name="sortControlSupported">false</property>
 
-        </properties>
-      </plugin>
-      -->
+                </properties>
+              </plugin>
+              -->
 
             <!-- LDAP CONFIGURATION -->
             <!-- The following plugin allows you to grant administrator authorizations to an existing LDAP user -->

@@ -60,11 +60,13 @@ public class CommonConnector extends AbstractConnector<CommonRequest, CommonResp
      *
      * https://developers.home-assistant.io/docs/api/rest/
      * provides for the services part following url structure: "/api/services/<domain>/<service>"
+     *
+     * Notice: The basePath is already set in the service instance
+     *
      * @return
      */
     protected String createUrl(String path, String domain, String service) {
         return new StringBuilder()
-                .append(basePath)
                 .append(path)
                 .append("/")
                 .append(domain)
@@ -77,18 +79,30 @@ public class CommonConnector extends AbstractConnector<CommonRequest, CommonResp
         return createUrl(HassioConsts.Common.PATH_SERVICES, domain, service);
     }
 
+    /**
+     * Helper method. Handle basic var's like path; auth credentials only, of to that moment no service instance
+     * exists.
+     * After that, simply the existing service instance will be returned regardless some different values from
+     * different processes.
+     */
+    private RestService getRestService(Map<String, Object> requestParameters) {
+        if (RestServiceFactory.isNotInstantiated()) {
+            final String basePath = checkParam(this.basePath, HassioConsts.Common.BASE_PATH, requestParameters);
+            final String authKey = checkParam(this.authKey, HassioConsts.Common.AUTH_KEY, requestParameters);
+            final String authValue = checkParam(this.authValue, HassioConsts.Common.AUTH_VAL, requestParameters);
+            return RestServiceFactory.getInstance(basePath, authKey, authValue);
+        } else {
+            return RestServiceFactory.getInstance();
+        }
+    }
+
     protected ConnectorResponse perform(CommonRequest request, String url, String jsonBody) {
         try {
             Map<String, Object> requestParameters = request.getRequestParameters();
             LOGGER.info("Executing operation. Given request = {}, given request parameters = {}", request,
                     requestParameters);
 
-            final String basePath = checkParam(this.basePath, HassioConsts.Common.BASE_PATH, requestParameters);
-            final String authKey = checkParam(this.authKey, HassioConsts.Common.AUTH_KEY, requestParameters);
-            final String authValue = checkParam(this.authValue, HassioConsts.Common.AUTH_VAL, requestParameters);
-
-            RestService service = RestServiceFactory.getInstance(basePath, authKey, authValue);
-
+            RestService service = getRestService(requestParameters);
             service.execute(url, jsonBody);
 
             CommonResponse response = new CommonResponse();
