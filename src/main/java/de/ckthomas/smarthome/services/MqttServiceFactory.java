@@ -26,6 +26,9 @@ public abstract class MqttServiceFactory {
         return getInstance(null, MqttClient.generateClientId());
     }
 
+    Es macht mehr Sinn, dass n-fach Client Instanzen bereitgestellt werden
+    die ServerURI hier per SysProp laden. DAher macht die Factory auch soweit Sinn...
+
     public static MqttService getInstance(String serverURI, String uniqueClientId) {
         if (isNotInstantiated()) {
             mqttService = new MqttService(serverURI, uniqueClientId);
