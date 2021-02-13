@@ -3,11 +3,15 @@ package de.ckthomas.smarthome.services;
 import de.ckthomas.smarthome.exceptions.HassioException;
 import org.camunda.bpm.engine.RuntimeService;
 import org.eclipse.paho.client.mqttv3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Christian Thomas
  */
 public class ProcessStarterService implements MqttCallback {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessStarterService.class);
 
     private final String serverURI;
     private final String username;
@@ -17,7 +21,7 @@ public class ProcessStarterService implements MqttCallback {
     private final String mqttProcessStartTopic;
 
     private final RuntimeService runtimeService;
-    private MqttClient mqttClient = null;
+    private IMqttClient mqttClient = null;
 
     ProcessStarterService(RuntimeService runtimeService, String serverURI, String username, char[] password,
                           String mqttProcessStartTopic, String uniqueClientId) {
@@ -29,7 +33,7 @@ public class ProcessStarterService implements MqttCallback {
         this.uniqueClientId = uniqueClientId;
     }
 
-    public void start() throws HassioException {
+    public void connect() throws HassioException {
         try {
             mqttClient = new MqttClient(serverURI, uniqueClientId);
 
@@ -48,23 +52,62 @@ public class ProcessStarterService implements MqttCallback {
             mqttClient.connect(options);
 
         } catch (Exception e) {
-            throw new HassioException("Could not start the work to listen to mqtt broker, while starting some " +
-                    "processes when requested", e);
+            throw new HassioException("Could not connect to mqtt broker", e);
+        }
+    }
+
+    public void subscribe() throws HassioException {
+        try {
+            mqttClient.setCallback(this);
+            mqttClient.subscribe(mqttProcessStartTopic);
+        } catch (Exception e) {
+            throw new HassioException("Could not subscribe ", e);
+        }
+    }
+
+    public void start() throws HassioException {
+        connect();
+        subscribe();
+    }
+
+    public void close() throws HassioException {
+        try {
+            mqttClient.unsubscribe(mqttProcessStartTopic);
+            mqttClient.disconnect();
+            mqttClient.close();
+        } catch (Exception e) {
+            throw new HassioException("Could not unsubscribe or close the mqtt connection", e);
+        }
+    }
+
+    /**
+     * Falls es ausgelagert wird, kann dies hier eine abstrakte Methode werden und dann spezifisch umgesetzt werden
+     *
+     * @param message
+     */
+    protected void handleMessage(MqttMessage message) throws HassioException {
+        final String processDefKey = message.toString();
+        try {
+            LOGGER.info("Incoming message with ProcessDefinitionKey = {}", message);
+            runtimeService.startProcessInstanceByKey(processDefKey);
+        } catch (Exception e) {
+            throw new HassioException("Could not start process with key = " + processDefKey, e);
         }
     }
 
     @Override
     public void connectionLost(Throwable cause) {
-
+        LOGGER.warn("Connection lost!", cause);
     }
 
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-
+        LOGGER.debug("new incoming message @ topic {} with content = {}", topic, message);
+        handleMessage(message);
     }
 
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-
+        LOGGER.debug("delivery is complete. Token = {}", token);
     }
 }

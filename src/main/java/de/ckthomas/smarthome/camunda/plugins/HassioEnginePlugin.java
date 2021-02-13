@@ -63,6 +63,7 @@ public class HassioEnginePlugin extends AbstractProcessEnginePlugin {
 
             processStarterService.start();
             LOGGER.info("ProcessStarterService is started.");
+
         } else {
             final String msg = "Could not start the ProcessStartService, Some missing properties (at least serverURI)!";
             LOGGER.error(msg);
