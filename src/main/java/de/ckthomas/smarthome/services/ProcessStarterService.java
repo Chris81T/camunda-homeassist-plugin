@@ -6,10 +6,12 @@ import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+
 /**
  * @author Christian Thomas
  */
-public class ProcessStarterService implements MqttCallback {
+public class    ProcessStarterService implements MqttCallback {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessStarterService.class);
 
@@ -35,6 +37,7 @@ public class ProcessStarterService implements MqttCallback {
 
     public void connect() throws HassioException {
         try {
+            LOGGER.info("About to connect to Mqtt Broker = '{}'", serverURI);
             mqttClient = new MqttClient(serverURI, uniqueClientId);
 
             MqttConnectOptions options = new MqttConnectOptions();
@@ -59,6 +62,7 @@ public class ProcessStarterService implements MqttCallback {
     public void subscribe() throws HassioException {
         try {
             mqttClient.setCallback(this);
+            LOGGER.info("About to subscribe to '{}'", mqttProcessStartTopic);
             mqttClient.subscribe(mqttProcessStartTopic);
         } catch (Exception e) {
             throw new HassioException("Could not subscribe ", e);

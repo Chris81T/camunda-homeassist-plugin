@@ -23,7 +23,7 @@ public class SwitchProvider extends CommonProvider {
     @Override
     public Connector<?> createConnectorInstance() {
         SwitchConnector connector = new SwitchConnector(getConnectorId(), basePath, authKey, authVal);
-        LOGGER.debug("Creating new {} instance = {}", getClass().getSimpleName(), connector);
+        LOGGER.info("Creating new {} instance = {}", getClass().getSimpleName(), connector);
         return connector;
     }
 

@@ -37,38 +37,46 @@ public class HassioEnginePlugin extends AbstractProcessEnginePlugin {
      */
     @Override
     public void postProcessEngineBuild(ProcessEngine processEngine) {
-        LOGGER.info("Process-Engine with name = {} is ready for work", processEngine.getName());
-        RuntimeService runtimeService = processEngine.getRuntimeService();
+        try {
+            LOGGER.info("Process-Engine with name = {} is ready for work", processEngine.getName());
+            RuntimeService runtimeService = processEngine.getRuntimeService();
 
-        String mqttProcessStartTopic = System.getProperty(HassioConsts.EnginePlugin.MQTT_PROCESS_START_TOPIC);
+            String mqttProcessStartTopic = System.getProperty(HassioConsts.EnginePlugin.MQTT_PROCESS_START_TOPIC);
 
-        if (mqttProcessStartTopic == null) {
-            mqttProcessStartTopic = HassioConsts.EnginePlugin.MQTT_PROCESS_START_TOPIC_DEFAULT;
+            if (mqttProcessStartTopic == null) {
+                mqttProcessStartTopic = HassioConsts.EnginePlugin.MQTT_PROCESS_START_TOPIC_DEFAULT;
+            }
+
+            final String serverURI = System.getProperty(HassioConsts.EnginePlugin.MQTT_SERVER_URI);
+            final String username = System.getProperty(HassioConsts.EnginePlugin.MQTT_USERNAME);
+            final String password = System.getProperty(HassioConsts.EnginePlugin.MQTT_PASSWORD);
+
+            if (serverURI != null) {
+                LOGGER.info("Instantiate ProcessStarterService with following details: runtimeService = {}, " +
+                                "mqttStartTopic = {}, " +
+                                "serverURI = {}, " +
+                                "username = {}, " +
+                                "password = {}",
+                        new Object[]{runtimeService, mqttProcessStartTopic, serverURI, username, password});
+                ProcessStarterService processStarterService = ProcessStarterServiceFactory.getInstance(
+                        runtimeService,
+                        mqttProcessStartTopic,
+                        serverURI,
+                        username,
+                        password != null ? password.toCharArray() : null
+                );
+
+                LOGGER.info("ProcessStarterService = {} is instantiated. About to start it...", processStarterService);
+
+                processStarterService.start();
+                LOGGER.info("ProcessStarterService is started.");
+
+            } else {
+                final String msg = "Could not start the ProcessStartService, Some missing properties (at least serverURI)!";
+                throw new HassioException(msg);
+            }
+        } catch (Exception e) {
+            LOGGER.error("HassioEnginePlugin failed! Service not available!", e);
         }
-
-        final String serverURI = System.getProperty(HassioConsts.EnginePlugin.MQTT_SERVER_URI);
-        final String username = System.getProperty(HassioConsts.EnginePlugin.MQTT_USERNAME);
-        final String password = System.getProperty(HassioConsts.EnginePlugin.MQTT_PASSWORD);
-
-        if (serverURI != null) {
-            ProcessStarterService processStarterService = ProcessStarterServiceFactory.getInstance(
-                    runtimeService,
-                    mqttProcessStartTopic,
-                    serverURI,
-                    username,
-                    password != null ? password.toCharArray() : null
-            );
-
-            LOGGER.info("ProcessStarterService = {} is instantiated. About to start it...", processStarterService);
-
-            processStarterService.start();
-            LOGGER.info("ProcessStarterService is started.");
-
-        } else {
-            final String msg = "Could not start the ProcessStartService, Some missing properties (at least serverURI)!";
-            LOGGER.error(msg);
-            throw new HassioException(msg);
-        }
-
     }
 }

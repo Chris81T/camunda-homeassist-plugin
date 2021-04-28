@@ -1,6 +1,9 @@
 package de.ckthomas.smarthome.services;
 
+import de.ckthomas.smarthome.camunda.connectors.homeassistant.common.CommonConnector;
 import okhttp3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -9,6 +12,8 @@ import java.io.IOException;
  * @author Christian Thomas
  */
 public class RestService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RestService.class);
 
     public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
@@ -32,9 +37,13 @@ public class RestService {
 
     public Request.Builder createRequestBuilder(String url) {
         final String prefix = basePath != null ? basePath + "/" : "";
+        final String finalUrl = prefix + url;
+        LOGGER.info("Using final url = {} for creating request builder", finalUrl);
+
         final Request.Builder builder = new Request.Builder()
-                .url(prefix + url);
+                .url(finalUrl);
         if (authKey != null && authValue != null) {
+            LOGGER.info("Adding header with authKey = {}, authValue = {}", authKey, "***secret***");
             builder.addHeader(authKey, authValue);
         }
         return builder;

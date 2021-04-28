@@ -43,7 +43,7 @@ public class CommonProvider implements ConnectorProvider {
     @Override
     public Connector<?> createConnectorInstance() {
         CommonConnector connector = new CommonConnector(getConnectorId(), basePath, authKey, authVal);
-        LOGGER.debug("Creating new {} instance = {}", getClass().getSimpleName(), connector);
+        LOGGER.info("Creating new {} instance = {}", getClass().getSimpleName(), connector);
         return connector;
     }
 

@@ -1,5 +1,7 @@
 package de.ckthomas.smarthome.sandbox;
 
+import de.ckthomas.smarthome.services.ProcessStarterService;
+import de.ckthomas.smarthome.services.ProcessStarterServiceFactory;
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -9,6 +11,19 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class MqttSample {
+
+    private static void listonToMqttViaService(String password) throws MqttException, InterruptedException {
+        ProcessStarterService processStarterService = ProcessStarterServiceFactory.getInstance(
+                null,
+                "camundahassio/processstart",
+                "tcp://jarvis.fritz.box:1883",
+                "hassio",
+                password != null ? password.toCharArray() : null
+        );
+
+        processStarterService.start();
+        System.out.println("hold the instance - manually termination is required");
+    }
 
     private static void listenToMqttSwitch(String password) throws MqttException, InterruptedException {
         final String publisherId = "Test_Case_Sample";
@@ -41,7 +56,7 @@ public class MqttSample {
     }
 
     public static void main(String[] args) throws Exception {
-        listenToMqttSwitch(args[0]);
+        listonToMqttViaService(args[0]);
         System.out.println("Finished...");
     }
 

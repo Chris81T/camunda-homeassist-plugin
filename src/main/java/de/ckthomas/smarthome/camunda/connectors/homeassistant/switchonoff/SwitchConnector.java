@@ -24,6 +24,7 @@ public class SwitchConnector extends CommonConnector {
     @Override
     public ConnectorResponse execute(CommonRequest request) {
         Map<String, Object> requestParameters = request.getRequestParameters();
+        LOGGER.info("About to execute SwitchConnector with given request parameters = {}", requestParameters);
 
         final String service = (String) requestParameters.get(HassioConsts.Common.KEY_URL_SERVICE);
         final String url = createServiceUrl(HassioConsts.Switch.DOMAIN, service);

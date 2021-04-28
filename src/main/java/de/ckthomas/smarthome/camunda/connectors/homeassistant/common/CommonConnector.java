@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public class CommonConnector extends AbstractConnector<CommonRequest, CommonResponse> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CommonConnector.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(CommonConnector.class);
 
     private final String basePath;
     private final String authKey;
@@ -99,13 +99,19 @@ public class CommonConnector extends AbstractConnector<CommonRequest, CommonResp
     protected ConnectorResponse perform(CommonRequest request, String url, String jsonBody) {
         try {
             Map<String, Object> requestParameters = request.getRequestParameters();
-            LOGGER.info("Executing operation. Given request = {}, given request parameters = {}", request,
-                    requestParameters);
+            LOGGER.info("Executing operation. Given common-request = {}, given request parameters = {}, given url = {}, " +
+                            "given json-body = {}", new Object[]{
+                                    request,
+                                    requestParameters,
+                                    url,
+                                    jsonBody
+            });
 
             RestService service = getRestService(requestParameters);
             service.execute(url, jsonBody);
 
             CommonResponse response = new CommonResponse();
+            LOGGER.info("Service call is executed. Response = {}", response);
             return response;
         } catch (IOException e) {
             LOGGER.error("Something went wrong during service execution!", e);
@@ -120,6 +126,8 @@ public class CommonConnector extends AbstractConnector<CommonRequest, CommonResp
     @Override
     public ConnectorResponse execute(CommonRequest request) {
         Map<String, Object> requestParameters = request.getRequestParameters();
+        LOGGER.info("About to execute CommonConnector with given request parameters = {}", requestParameters);
+
         final String jsonBody = (String) requestParameters.get(HassioConsts.Common.KEY_JSON_BODY);
         final String path = (String) requestParameters.get(HassioConsts.Common.KEY_URL_PATH);
         final String domain = (String) requestParameters.get(HassioConsts.Common.KEY_URL_DOMAIN);
