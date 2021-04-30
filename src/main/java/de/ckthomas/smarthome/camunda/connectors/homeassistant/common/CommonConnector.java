@@ -5,6 +5,7 @@ import de.ckthomas.smarthome.camunda.connectors.homeassistant.HassioConsts;
 import de.ckthomas.smarthome.exceptions.HassioException;
 import de.ckthomas.smarthome.services.RestService;
 import de.ckthomas.smarthome.services.RestServiceFactory;
+import okhttp3.Response;
 import org.camunda.connect.impl.AbstractConnector;
 import org.camunda.connect.spi.ConnectorResponse;
 import org.slf4j.Logger;
@@ -51,7 +52,7 @@ public class CommonConnector extends AbstractConnector<CommonRequest, CommonResp
      * @param map - key - value pair content for the producing json
      * @return json as string
      */
-    protected String toJson(Map<String, String> map) {
+    protected String toJson(Map<String, Object> map) {
         return gson.toJson(map);
     }
 
@@ -100,19 +101,24 @@ public class CommonConnector extends AbstractConnector<CommonRequest, CommonResp
         try {
             Map<String, Object> requestParameters = request.getRequestParameters();
             LOGGER.info("Executing operation. Given common-request = {}, given request parameters = {}, given url = {}, " +
-                            "given json-body = {}", new Object[]{
-                                    request,
-                                    requestParameters,
-                                    url,
-                                    jsonBody
-            });
+                            "given json-body = {}",
+                    request,
+                    requestParameters,
+                    url,
+                    jsonBody);
 
             RestService service = getRestService(requestParameters);
-            service.execute(url, jsonBody);
+            Response serviceResponse = service.execute(url, jsonBody);
 
-            CommonResponse response = new CommonResponse();
-            LOGGER.info("Service call is executed. Response = {}", response);
-            return response;
+            if (serviceResponse.isSuccessful()) {
+                CommonResponse response = new CommonResponse(serviceResponse);
+                LOGGER.info("Service call is executed. Response = {}", response);
+                return response;
+            } else {
+                String failure = serviceResponse.body().string();
+                LOGGER.error("Http Rest Request Execution failed! Message = {}", failure);
+                throw new HassioException(failure);
+            }
         } catch (IOException e) {
             LOGGER.error("Something went wrong during service execution!", e);
             throw new HassioException("Could not perform execution. IOException (Service Call). Error Message = " +

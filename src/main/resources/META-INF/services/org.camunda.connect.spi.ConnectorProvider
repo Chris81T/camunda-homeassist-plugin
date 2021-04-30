@@ -1,2 +1,4 @@
 de.ckthomas.smarthome.camunda.connectors.homeassistant.common.CommonProvider
 de.ckthomas.smarthome.camunda.connectors.homeassistant.switchonoff.SwitchProvider
+de.ckthomas.smarthome.camunda.connectors.homeassistant.cover.CoverProvider
+de.ckthomas.smarthome.camunda.connectors.homeassistant.light.LightProvider

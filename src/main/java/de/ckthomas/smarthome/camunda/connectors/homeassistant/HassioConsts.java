@@ -1,5 +1,9 @@
 package de.ckthomas.smarthome.camunda.connectors.homeassistant;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author Christian Thomas
  */
@@ -7,6 +11,8 @@ public abstract class HassioConsts {
     public abstract class ConnectorIds {
         public static final String ID_COMMON = "hassio-common";
         public static final String ID_SWITCH = "hassio-switch";
+        public static final String ID_COVER = "hassio-cover";
+        public static final String ID_LIGHT = "hassio-light";
     }
 
     public abstract class Common {
@@ -23,6 +29,16 @@ public abstract class HassioConsts {
 
     public abstract class Switch {
         public static final String DOMAIN = "switch";
+        public static final String JSON_BODY_ENTITY_ID = "entity_id";
+    }
+
+    public abstract class Light {
+        public static final String DOMAIN = "light";
+        public static final String JSON_BODY_ENTITY_ID = "entity_id";
+    }
+
+    public abstract class Cover {
+        public static final String DOMAIN = "cover";
         public static final String JSON_BODY_ENTITY_ID = "entity_id";
     }
 

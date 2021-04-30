@@ -59,6 +59,41 @@ public class OkHttpSample {
         Call call = httpClient.newCall(httpRequest);
         Response response = call.execute();
 
+        /*
+Fehler 404   --> es wird keine IOException geworfen
+isSuccessful = false
+message = Not Found
+code = 404
+sentRequestAtMillis = 1619727774897
+receivedResponseAtMillis = 1619727774905
+
+AKTION, welche keine Wirkung hat (Licht an, wenn LIcht schon an ist)
+Licht an....
+isSuccessful = true
+message = OK
+code = 200
+sentRequestAtMillis = 1619727914802
+receivedResponseAtMillis = 1619727914849
+Response:
+[]
+
+AKTION, welche eine Wirkung hat
+isSuccessful = true
+message = OK
+code = 200
+sentRequestAtMillis = 1619727917910
+receivedResponseAtMillis = 1619727917968
+Response:
+[{"entity_id": "switch.wohnzimmer_hue_tv_fenster_channel_2", "state": "off", "attributes": {"friendly_name": "Wohnzimmer Hue (Fenster 1 RGB)"}, "last_changed": "2021-04-29T20:25:08.339043+00:00", "last_updated": "2021-04-29T20:25:08.339043+00:00", "context": {"id": "c024ff65221e9fa661cdb0bfb143edeb", "parent_id": null, "user_id": "3e9690418396464b99f3b66e95bfa2e8"}}]
+
+         */
+
+        System.out.println("isSuccessful = " + response.isSuccessful());
+        System.out.println("message = " + response.message());
+        System.out.println("code = " + response.code());
+        System.out.println("sentRequestAtMillis = " + response.sentRequestAtMillis());
+        System.out.println("receivedResponseAtMillis = " + response.receivedResponseAtMillis());
+
         String result = response.body().string();
         System.out.println("Response:\n" + result);
     }
@@ -82,7 +117,11 @@ public class OkHttpSample {
         Thread.sleep(500);
         System.out.println("1.");
         Thread.sleep(500);
-        lightOn();
+        try {
+            lightOn();
+        } catch (IOException e) {
+            System.err.println("Ooooh no... " + e.getMessage());
+        }
         Thread.sleep(1500);
         System.out.println("3...");
         Thread.sleep(500);
