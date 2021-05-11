@@ -1,5 +1,7 @@
 package de.ckthomas.smarthome.services;
 
+import com.google.gson.Gson;
+import de.ckthomas.smarthome.dtos.ProcessStartDto;
 import de.ckthomas.smarthome.exceptions.HassioException;
 import org.camunda.bpm.engine.RuntimeService;
 import org.eclipse.paho.client.mqttv3.*;
@@ -24,6 +26,7 @@ public class    ProcessStarterService implements MqttCallback {
 
     private final RuntimeService runtimeService;
     private IMqttClient mqttClient = null;
+    private final Gson gson = new Gson();
 
     ProcessStarterService(RuntimeService runtimeService, String serverURI, String username, char[] password,
                           String mqttProcessStartTopic, String uniqueClientId) {
@@ -90,18 +93,30 @@ public class    ProcessStarterService implements MqttCallback {
      * @param message
      */
     protected void handleMessage(MqttMessage message) throws HassioException {
-        final String processDefKey = message.toString();
+        final String payload = message.toString();
         try {
-            LOGGER.info("Incoming message with ProcessDefinitionKey = {}", message);
-            runtimeService.startProcessInstanceByKey(processDefKey);
+            LOGGER.info("Incoming payload = {} to start new process instance", payload);
+            final ProcessStartDto dto = gson.fromJson(payload, ProcessStartDto.class);
+            LOGGER.info("Parsed dto from payload = {}", dto);
+            if (dto.getBusinessKey() != null) {
+                runtimeService.startProcessInstanceByKey(dto.getProcessDefinitionKey(), dto.getBusinessKey(),
+                        dto.getVariables());
+            } else {
+                runtimeService.startProcessInstanceByKey(dto.getProcessDefinitionKey(), dto.getVariables());
+            }
         } catch (Exception e) {
-            throw new HassioException("Could not start process with key = " + processDefKey, e);
+            throw new HassioException("Could not start process with key = " + payload, e);
         }
     }
 
     @Override
     public void connectionLost(Throwable cause) {
         LOGGER.warn("Connection lost!", cause);
+        try {
+            mqttClient.reconnect();
+        } catch (MqttException e) {
+            LOGGER.error("Could not reconnect to MQTT broker! Check exception = ", e);
+        }
     }
 
     @Override
