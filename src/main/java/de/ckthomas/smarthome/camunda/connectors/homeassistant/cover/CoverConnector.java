@@ -13,6 +13,8 @@ import java.util.Map;
  *
  * service values: open_cover, stop_cover, close_cover
  *
+ * TODO: https://www.home-assistant.io/integrations/cover#service-coverset_cover_position --> Value between 0 - 100
+ *
  * @author Christian Thomas
  */
 public class CoverConnector extends CommonConnector {

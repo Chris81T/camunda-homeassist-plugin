@@ -43,10 +43,6 @@ public class HassioEnginePlugin extends AbstractProcessEnginePlugin {
 
             String mqttProcessStartTopic = System.getProperty(HassioConsts.EnginePlugin.MQTT_PROCESS_START_TOPIC);
 
-            if (mqttProcessStartTopic == null) {
-                mqttProcessStartTopic = HassioConsts.EnginePlugin.MQTT_PROCESS_START_TOPIC_DEFAULT;
-            }
-
             final String serverURI = System.getProperty(HassioConsts.EnginePlugin.MQTT_SERVER_URI);
             final String username = System.getProperty(HassioConsts.EnginePlugin.MQTT_USERNAME);
             final String password = System.getProperty(HassioConsts.EnginePlugin.MQTT_PASSWORD);

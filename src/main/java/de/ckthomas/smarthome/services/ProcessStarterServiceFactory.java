@@ -1,5 +1,6 @@
 package de.ckthomas.smarthome.services;
 
+import de.ckthomas.smarthome.camunda.connectors.homeassistant.HassioConsts;
 import org.camunda.bpm.engine.RuntimeService;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 
@@ -37,6 +38,11 @@ public abstract class ProcessStarterServiceFactory {
                                                     String serverURI, String username, char[] password,
                                                     String uniqueClientId) {
         if (isNotInstantiated()) {
+
+            if (mqttProcessStartTopic == null) {
+                mqttProcessStartTopic = HassioConsts.EnginePlugin.MQTT_PROCESS_START_TOPIC_DEFAULT;
+            }
+
             processStarterService = new ProcessStarterService(
                     runtimeService,
                     serverURI,
