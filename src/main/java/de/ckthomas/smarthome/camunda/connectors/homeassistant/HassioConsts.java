@@ -43,9 +43,14 @@ public abstract class HassioConsts {
     }
 
     public abstract class EnginePlugin {
+        public static final String MQTT_TOPIC_SEPERATOR = ",";
+
         public static final String MQTT_SERVER_URI = "mqttServerURI";
         public static final String MQTT_USERNAME = "mqttUser";
         public static final String MQTT_PASSWORD = "mqttPassword";
+
+        public static final String MQTT_TO_BPMN_SIGNAL_TOPIC = "mqttToBpmnSignalTopic";
+
         public static final String MQTT_PROCESS_START_TOPIC = "mqttProcessStartTopic";
         public static final String MQTT_PROCESS_START_TOPIC_DEFAULT = "camundahassio/processstart";
     }

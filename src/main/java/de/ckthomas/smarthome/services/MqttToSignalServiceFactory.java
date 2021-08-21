@@ -1,5 +1,7 @@
 package de.ckthomas.smarthome.services;
 
+import de.ckthomas.smarthome.camunda.connectors.homeassistant.HassioConsts;
+import org.camunda.bpm.engine.RuntimeService;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 
 /**
@@ -21,17 +23,32 @@ public abstract class MqttToSignalServiceFactory {
         return !isInstantiated();
     }
 
-    public static MqttToSignalService getInstance() {
-        return getInstance(null);
+    public static MqttToSignalService getCurrentInstance() {
+        return mqttToSignalService;
     }
 
-    public static MqttToSignalService getInstance(String serverURI) {
-        return getInstance(null, MqttClient.generateClientId());
+    public static MqttToSignalService getInstance(RuntimeService runtimeService, String... mqttProcessStartTopics) {
+        return getInstance(runtimeService, null, null, null, mqttProcessStartTopics);
     }
 
-    public static MqttToSignalService getInstance(String serverURI, String uniqueClientId) {
+    public static MqttToSignalService getInstance(RuntimeService runtimeService, String serverURI, String username,
+                                                  char[] password, String... mqttProcessStartTopics) {
+        return getInstance(MqttClient.generateClientId(), runtimeService, serverURI, username, password,
+                mqttProcessStartTopics);
+    }
+
+    public static MqttToSignalService getInstance(String uniqueClientId, RuntimeService runtimeService, String serverURI,
+                                                  String username, char[] password, String... mqttProcessStartTopics) {
         if (isNotInstantiated()) {
-          //  mqttService = new MqttService(serverURI, uniqueClientId);
+
+            mqttToSignalService = new MqttToSignalService(
+                    runtimeService,
+                    serverURI,
+                    username,
+                    password,
+                    uniqueClientId,
+                    mqttProcessStartTopics
+            );
         }
         return mqttToSignalService;
     }

@@ -2,6 +2,8 @@ package de.ckthomas.smarthome.camunda.plugins;
 
 import de.ckthomas.smarthome.camunda.connectors.homeassistant.HassioConsts;
 import de.ckthomas.smarthome.exceptions.HassioException;
+import de.ckthomas.smarthome.services.MqttToSignalService;
+import de.ckthomas.smarthome.services.MqttToSignalServiceFactory;
 import de.ckthomas.smarthome.services.ProcessStarterService;
 import de.ckthomas.smarthome.services.ProcessStarterServiceFactory;
 import org.camunda.bpm.engine.ProcessEngine;
@@ -10,6 +12,8 @@ import org.camunda.bpm.engine.impl.cfg.AbstractProcessEnginePlugin;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
 
 /**
  * @author Christian Thomas
@@ -41,38 +45,97 @@ public class HassioEnginePlugin extends AbstractProcessEnginePlugin {
             LOGGER.info("Process-Engine with name = {} is ready for work", processEngine.getName());
             RuntimeService runtimeService = processEngine.getRuntimeService();
 
-            String mqttProcessStartTopic = System.getProperty(HassioConsts.EnginePlugin.MQTT_PROCESS_START_TOPIC);
-
             final String serverURI = System.getProperty(HassioConsts.EnginePlugin.MQTT_SERVER_URI);
             final String username = System.getProperty(HassioConsts.EnginePlugin.MQTT_USERNAME);
             final String password = System.getProperty(HassioConsts.EnginePlugin.MQTT_PASSWORD);
 
-            if (serverURI != null) {
-                LOGGER.info("Instantiate ProcessStarterService with following details: runtimeService = {}, " +
-                                "mqttStartTopic = {}, " +
-                                "serverURI = {}, " +
-                                "username = {}, " +
-                                "password = {}",
-                        new Object[]{runtimeService, mqttProcessStartTopic, serverURI, username, password});
-                ProcessStarterService processStarterService = ProcessStarterServiceFactory.getInstance(
-                        runtimeService,
-                        mqttProcessStartTopic,
-                        serverURI,
-                        username,
-                        password != null ? password.toCharArray() : null
-                );
+            initProcessStarterService(serverURI, username, password, runtimeService);
+            initMqttToSignalService(serverURI, username, password, runtimeService);
 
-                LOGGER.info("ProcessStarterService = {} is instantiated. About to start it...", processStarterService);
-
-                processStarterService.start();
-                LOGGER.info("ProcessStarterService is started.");
-
-            } else {
-                final String msg = "Could not start the ProcessStartService, Some missing properties (at least serverURI)!";
-                throw new HassioException(msg);
-            }
         } catch (Exception e) {
-            LOGGER.error("HassioEnginePlugin failed! Service not available!", e);
+            LOGGER.error("HassioEnginePlugin failed! Services not available!", e);
         }
+    }
+
+    private void initProcessStarterService(String serverURI, String username, String password,
+                                           RuntimeService runtimeService) throws Exception {
+
+        if (serverURI != null) {
+            String mqttProcessStartTopic = System.getProperty(HassioConsts.EnginePlugin.MQTT_PROCESS_START_TOPIC);
+
+            LOGGER.info("Instantiate ProcessStarterService with following details: runtimeService = {}, " +
+                            "mqttStartTopic = {}, " +
+                            "serverURI = {}, " +
+                            "username = {}, " +
+                            "password = {}",
+                    new Object[]{runtimeService, mqttProcessStartTopic, serverURI, username, password});
+            ProcessStarterService processStarterService = ProcessStarterServiceFactory.getInstance(
+                    runtimeService,
+                    mqttProcessStartTopic,
+                    serverURI,
+                    username,
+                    password != null ? password.toCharArray() : null
+            );
+
+            LOGGER.info("ProcessStarterService = {} is instantiated. About to start it...", processStarterService);
+
+            processStarterService.start();
+            LOGGER.info("ProcessStarterService is started.");
+
+        } else {
+            final String msg = "Could not start the ProcessStartService, Some missing properties (at least serverURI)!";
+            throw new HassioException(msg);
+        }
+    }
+
+    private void initMqttToSignalService(String serverURI, String username, String password,
+                                           RuntimeService runtimeService) throws Exception {
+        if (serverURI != null) {
+            String mqttToBpmnSignalTopic = System.getProperty(HassioConsts.EnginePlugin.MQTT_TO_BPMN_SIGNAL_TOPIC);
+            String[] extractedTopics = extractTopics(mqttToBpmnSignalTopic);
+
+            LOGGER.info("Instantiate MqttToSignalService with following details: runtimeService = {}, " +
+                            "mqttToBpmnSignalTopic = {}, " +
+                            "extractedTopics = {}, " +
+                            "serverURI = {}, " +
+                            "username = {}, " +
+                            "password = {}",
+                    new Object[]{runtimeService, mqttToBpmnSignalTopic, extractedTopics, serverURI,
+                            username, password});
+
+
+            MqttToSignalService mqttToSignalService = MqttToSignalServiceFactory.getInstance(
+                    runtimeService,
+                    serverURI,
+                    username,
+                    password != null ? password.toCharArray() : null,
+                    extractedTopics
+            );
+
+            LOGGER.info("MqttToSignalService = {} is instantiated. About to start it...", mqttToSignalService);
+
+            mqttToSignalService.start();
+            LOGGER.info("MqttToSignalService is started.");
+
+        } else {
+            final String msg = "Could not start the MqttToSignalService, Some missing properties (at least serverURI)!";
+            throw new HassioException(msg);
+        }
+    }
+
+    /**
+     * As separator a ',' will be used.
+     *
+     * Example: "topic/one/a,topic/one/b,topic/two"
+     */
+    private String[] extractTopics(String topics) {
+        final String separator = HassioConsts.EnginePlugin.MQTT_TOPIC_SEPERATOR;
+
+        if (topics.contains(separator)) {
+            return topics.split(separator);
+        }
+
+        String[] oneTopic = {topics};
+        return oneTopic;
     }
 }

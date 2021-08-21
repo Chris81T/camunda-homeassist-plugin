@@ -20,8 +20,8 @@ public abstract class ProcessStarterServiceFactory {
         return !isInstantiated();
     }
 
-    public static ProcessStarterService getInstance() {
-        return getInstance(null, null);
+    public static ProcessStarterService getCurrentInstance() {
+        return processStarterService;
     }
 
     public static ProcessStarterService getInstance(RuntimeService runtimeService, String mqttProcessStartTopic) {
