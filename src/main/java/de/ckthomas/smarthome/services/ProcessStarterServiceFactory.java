@@ -48,8 +48,8 @@ public abstract class ProcessStarterServiceFactory {
                     serverURI,
                     username,
                     password,
-                    mqttProcessStartTopic,
-                    uniqueClientId
+                    uniqueClientId,
+                    mqttProcessStartTopic
             );
         }
         return processStarterService;

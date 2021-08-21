@@ -19,18 +19,18 @@ public abstract class AbstractMqttService implements MqttCallback {
     protected final char[] password;
 
     protected final String uniqueClientId;
-    protected final String mqttTopic;
+    protected final String[] mqttTopics;
 
     protected final RuntimeService runtimeService;
     protected IMqttClient mqttClient = null;
     protected final Gson gson = new Gson();
 
     protected AbstractMqttService(Class<?> loggerClass, RuntimeService runtimeService, String serverURI,
-                                  String username, char[] password, String mqttTopic,
-                                  String uniqueClientId) {
+                                  String username, char[] password, String uniqueClientId,
+                                  String... mqttTopics) {
         LOGGER = LoggerFactory.getLogger(loggerClass);
         this.runtimeService = runtimeService;
-        this.mqttTopic = mqttTopic;
+        this.mqttTopics = mqttTopics;
         this.serverURI = serverURI;
         this.username = username;
         this.password = password;
@@ -43,7 +43,24 @@ public abstract class AbstractMqttService implements MqttCallback {
      * @param message
      * @throws HassioException
      */
-    protected abstract void handleMessage(MqttMessage message) throws HassioException;
+    protected abstract void handleMessage(String topic, MqttMessage message) throws HassioException;
+
+    /**
+     * Helper method to check, if given string is a JSON or not.
+     *
+     * NOTE: If a simple String is given, also false will be returned!
+     *
+     * @param valToCheck
+     * @return true or false
+     */
+    protected boolean isJson(String valToCheck) {
+        try {
+            Object json = gson.fromJson(valToCheck, Object.class);
+            return !String.class.equals(json.getClass()) ? true : false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     public void connect() throws HassioException {
         try {
@@ -72,8 +89,8 @@ public abstract class AbstractMqttService implements MqttCallback {
     public void subscribe() throws HassioException {
         try {
             mqttClient.setCallback(this);
-            LOGGER.info("About to subscribe to '{}'", mqttTopic);
-            mqttClient.subscribe(mqttTopic);
+            LOGGER.info("About to subscribe to topics = '{}'", mqttTopics);
+            mqttClient.subscribe(mqttTopics);
         } catch (Exception e) {
             throw new HassioException("Could not subscribe ", e);
         }
@@ -86,7 +103,7 @@ public abstract class AbstractMqttService implements MqttCallback {
 
     public void close() throws HassioException {
         try {
-            mqttClient.unsubscribe(mqttTopic);
+            mqttClient.unsubscribe(mqttTopics);
             mqttClient.disconnect();
             mqttClient.close();
         } catch (Exception e) {
@@ -107,7 +124,7 @@ public abstract class AbstractMqttService implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
         LOGGER.debug("new incoming message @ topic {} with content = {}", topic, message);
-        handleMessage(message);
+        handleMessage(topic, message);
     }
 
     @Override

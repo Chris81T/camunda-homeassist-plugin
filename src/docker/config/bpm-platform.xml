@@ -13,6 +13,7 @@
 
         <properties>
             <property name="history">full</property>
+            <property name="historyTimeToLive">P365D</property>
             <property name="databaseSchemaUpdate">true</property>
             <property name="authorizationEnabled">true</property>
             <property name="jobExecutorDeploymentAware">true</property>

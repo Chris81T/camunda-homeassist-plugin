@@ -16,14 +16,14 @@ import org.slf4j.LoggerFactory;
 public class ProcessStarterService extends AbstractMqttService {
 
     ProcessStarterService(RuntimeService runtimeService, String serverURI, String username, char[] password,
-                          String mqttProcessStartTopic, String uniqueClientId) {
+                          String uniqueClientId, String mqttProcessStartTopic) {
         super(ProcessStarterService.class,
                 runtimeService,
                 serverURI,
                 username,
                 password,
-                mqttProcessStartTopic,
-                uniqueClientId);
+                uniqueClientId,
+                mqttProcessStartTopic);
     }
 
     /**
@@ -31,7 +31,7 @@ public class ProcessStarterService extends AbstractMqttService {
      *
      * @param message
      */
-    protected void handleMessage(MqttMessage message) throws HassioException {
+    protected void handleMessage(String topic, MqttMessage message) throws HassioException {
         final String payload = message.toString();
         try {
             LOGGER.info("Incoming payload = {} to start new process instance", payload);
