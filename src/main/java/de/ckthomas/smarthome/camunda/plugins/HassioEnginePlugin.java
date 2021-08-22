@@ -67,7 +67,7 @@ public class HassioEnginePlugin extends AbstractProcessEnginePlugin {
                             "mqttStartTopic = {}, " +
                             "serverURI = {}, " +
                             "username = {}, " +
-                            "password = {}",
+                            "password = ******",
                     new Object[]{runtimeService, mqttProcessStartTopic, serverURI, username, password});
             ProcessStarterService processStarterService = ProcessStarterServiceFactory.getInstance(
                     runtimeService,

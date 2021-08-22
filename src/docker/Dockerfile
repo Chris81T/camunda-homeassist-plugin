@@ -1,4 +1,4 @@
-FROM camunda/camunda-bpm-platform:tomcat-latest
+FROM camunda/camunda-bpm-platform:tomcat-7.15.0
 MAINTAINER Christian Thomas <christian@ckthomas.de>
 
 # remove demo app
