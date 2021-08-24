@@ -15,6 +15,18 @@ public abstract class MqttToSignalServiceFactory {
 
     private static MqttToSignalService mqttToSignalService = null;
 
+    private static MqttToSignalService createInstance(String uniqueClientId, RuntimeService runtimeService, String serverURI,
+                                                  String username, char[] password, String... mqttProcessStartTopics) {
+        return new MqttToSignalService(
+                    runtimeService,
+                    serverURI,
+                    username,
+                    password,
+                    uniqueClientId,
+                    mqttProcessStartTopics
+        );
+    }
+
     public static boolean isInstantiated() {
         return mqttToSignalService != null;
     }
@@ -41,16 +53,31 @@ public abstract class MqttToSignalServiceFactory {
                                                   String username, char[] password, String... mqttProcessStartTopics) {
         if (isNotInstantiated()) {
 
-            mqttToSignalService = new MqttToSignalService(
+            mqttToSignalService = createInstance(
+                    uniqueClientId,
                     runtimeService,
                     serverURI,
                     username,
                     password,
-                    uniqueClientId,
                     mqttProcessStartTopics
             );
         }
         return mqttToSignalService;
+    }
+
+    /**
+     * Useful to subscribe during process runtime execution a specific topic
+     *
+     * @param topic
+     * @param executionId
+     * @param activityInstanceId
+     */
+    public static void addRuntimeSubscription(String topic, String executionId, String activityInstanceId) {
+
+    }
+
+    public static void removeRuntimeSubscription(String executionId, String activityInstanceId) {
+
     }
 
 }

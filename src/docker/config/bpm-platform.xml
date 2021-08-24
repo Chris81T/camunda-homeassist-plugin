@@ -6,11 +6,11 @@
         <job-acquisition name="default" />
         <!-- special config to allow timer events with 10sec for instance -->
         <!-- https://docs.camunda.org/manual/7.15/reference/deployment-descriptors/tags/job-executor/ -->
-        <properties>
+        <!--<properties>
             <property name="waitTimeInMillis">2250</property>
             <property name="maxWait">5000</property>
             <property name="waitIncreaseFactor">2</property>
-        </properties>
+        </properties>-->
     </job-executor>
 
     <process-engine name="default">

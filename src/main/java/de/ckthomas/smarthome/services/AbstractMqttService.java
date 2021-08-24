@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import de.ckthomas.smarthome.exceptions.HassioException;
 import org.camunda.bpm.engine.RuntimeService;
 import org.eclipse.paho.client.mqttv3.*;
+import org.python.antlr.ast.Exec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,8 +124,12 @@ public abstract class AbstractMqttService implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-        LOGGER.debug("new incoming message @ topic {} with content = {}", topic, message);
-        handleMessage(topic, message);
+        try {
+            LOGGER.debug("new incoming message @ topic {} with content = {}", topic, message);
+            handleMessage(topic, message);
+        } catch (Exception e) {
+            LOGGER.error("Something went wrong while handling arrived message = " + message, e);
+        }
     }
 
     @Override

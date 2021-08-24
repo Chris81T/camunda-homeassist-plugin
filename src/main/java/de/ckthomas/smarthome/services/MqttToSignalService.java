@@ -48,20 +48,4 @@ public class MqttToSignalService extends AbstractMqttService {
         }
     }
 
-    // TODO WRONG PLACE HERE?!?!?!
-    /**
-     * Useful to subscribe during process runtime execution a specific topic
-     *
-     * @param topic
-     * @param executionId
-     * @param activityInstanceId
-     */
-    public void addRuntimeSubscription(String topic, String executionId, String activityInstanceId) {
-
-    }
-
-    // TODO WRONG PLACE HERE?!?!?!
-    public void removeRuntimeSubscription(String executionId, String activityInstanceId) {
-
-    }
 }
