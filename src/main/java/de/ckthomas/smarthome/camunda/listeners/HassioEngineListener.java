@@ -16,14 +16,30 @@ public class HassioEngineListener extends AbstractBpmnParseListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(HassioEngineListener.class);
 
     @Override
+    public void parseBoundarySignalEventDefinition(Element signalEventDefinition, boolean interrupting, ActivityImpl signalActivity) {
+        super.parseBoundarySignalEventDefinition(signalEventDefinition, interrupting, signalActivity);
+    }
+
+    @Override
     public void parseIntermediateSignalCatchEventDefinition(Element signalEventDefinition, ActivityImpl signalActivity) {
         super.parseIntermediateSignalCatchEventDefinition(signalEventDefinition, signalActivity);
-        final String signalName = signalEventDefinition.attribute("signalName");
 
-        LOGGER.info("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX signalName = {}", signalName);
+        final String signalRef = signalEventDefinition.attribute("signalRef");
 
-        addExecutionListener(signalActivity, new MqttExecutionStartListener(signalName), ExecutionListener.EVENTNAME_START);
-        addExecutionListener(signalActivity, new MqttExecutionEndListener(signalName), ExecutionListener.EVENTNAME_END);
+        signalEventDefinition.elements().forEach(element -> LOGGER.info(">>>> FOREACH ELEMENT = {}", element));
+
+        signalEventDefinition.attributes().forEach(attribute -> LOGGER.info(">>>> ATTR = {}, attribute() = {}", attribute,
+                signalEventDefinition.attribute(attribute)));
+
+
+        signalActivity.getParentFlowScopeActivity();
+
+
+
+        LOGGER.info("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX signalRef = {}", signalRef);
+
+        addExecutionListener(signalActivity, new MqttExecutionStartListener(signalRef), ExecutionListener.EVENTNAME_START);
+        addExecutionListener(signalActivity, new MqttExecutionEndListener(signalRef), ExecutionListener.EVENTNAME_END);
     }
 
     private void addExecutionListener(ActivityImpl activity, ExecutionListener executionListener, String eventName) {
