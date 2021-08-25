@@ -1,6 +1,7 @@
 package de.ckthomas.smarthome.camunda.plugins;
 
 import de.ckthomas.smarthome.camunda.connectors.homeassistant.HassioConsts;
+import de.ckthomas.smarthome.camunda.listeners.HassioEngineListener;
 import de.ckthomas.smarthome.exceptions.HassioException;
 import de.ckthomas.smarthome.services.MqttToSignalService;
 import de.ckthomas.smarthome.services.MqttToSignalServiceFactory;
@@ -8,12 +9,15 @@ import de.ckthomas.smarthome.services.ProcessStarterService;
 import de.ckthomas.smarthome.services.ProcessStarterServiceFactory;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.RuntimeService;
+import org.camunda.bpm.engine.impl.bpmn.parser.BpmnParseListener;
 import org.camunda.bpm.engine.impl.cfg.AbstractProcessEnginePlugin;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Christian Thomas
@@ -22,12 +26,20 @@ public class HassioEnginePlugin extends AbstractProcessEnginePlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HassioEnginePlugin.class);
 
+    private final HassioEngineListener hassioEngineListener = new HassioEngineListener();
+
     @Override
     public void preInit(ProcessEngineConfigurationImpl processEngineConfiguration) {
         LOGGER.info("PRE-INIT Phase. About to initiate the MqttService...");
-//        processEngineConfiguration.getCustomPreBPMNParseListeners().forEach(listener -> {
-//            listener.parseBoundarySignalEventDefinition();
-//        });
+        List<BpmnParseListener> listeners = processEngineConfiguration.getCustomPreBPMNParseListeners();
+
+        if (listeners == null) {
+            listeners = new ArrayList<>();
+        }
+
+        listeners.add(hassioEngineListener);
+
+        processEngineConfiguration.setCustomPreBPMNParseListeners(listeners);
     }
 
     @Override
