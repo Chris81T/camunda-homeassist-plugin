@@ -81,17 +81,29 @@ public abstract class AbstractMqttService implements MqttCallback {
             }
 
             mqttClient.connect(options);
-
+            mqttClient.setCallback(this);
         } catch (Exception e) {
             throw new HassioException("Could not connect to mqtt broker", e);
         }
     }
 
-    public void subscribe() throws HassioException {
+    public void subscribe(String... mqttTopics) throws HassioException {
         try {
-            mqttClient.setCallback(this);
             LOGGER.info("About to subscribe to topics = '{}'", mqttTopics);
             mqttClient.subscribe(mqttTopics);
+        } catch (Exception e) {
+            throw new HassioException("Could not subscribe ", e);
+        }
+    }
+
+    public void subscribe() throws HassioException {
+        subscribe(mqttTopics);
+    }
+
+    public void unsubscribe(String... mqttTopics) throws HassioException {
+        try {
+            LOGGER.info("About to unsubscribe following topics = '{}'", mqttTopics);
+            mqttClient.unsubscribe(mqttTopics);
         } catch (Exception e) {
             throw new HassioException("Could not subscribe ", e);
         }

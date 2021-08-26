@@ -1,6 +1,6 @@
 package de.ckthomas.smarthome.camunda.plugins;
 
-import de.ckthomas.smarthome.camunda.connectors.homeassistant.HassioConsts;
+import de.ckthomas.smarthome.camunda.PluginConsts;
 import de.ckthomas.smarthome.camunda.listeners.HassioEngineListener;
 import de.ckthomas.smarthome.exceptions.HassioException;
 import de.ckthomas.smarthome.services.MqttToSignalService;
@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -57,9 +56,9 @@ public class HassioEnginePlugin extends AbstractProcessEnginePlugin {
             LOGGER.info("Process-Engine with name = {} is ready for work", processEngine.getName());
             RuntimeService runtimeService = processEngine.getRuntimeService();
 
-            final String serverURI = System.getProperty(HassioConsts.EnginePlugin.MQTT_SERVER_URI);
-            final String username = System.getProperty(HassioConsts.EnginePlugin.MQTT_USERNAME);
-            final String password = System.getProperty(HassioConsts.EnginePlugin.MQTT_PASSWORD);
+            final String serverURI = System.getProperty(PluginConsts.EnginePlugin.MQTT_SERVER_URI);
+            final String username = System.getProperty(PluginConsts.EnginePlugin.MQTT_USERNAME);
+            final String password = System.getProperty(PluginConsts.EnginePlugin.MQTT_PASSWORD);
 
             initProcessStarterService(serverURI, username, password, runtimeService);
             initMqttToSignalService(serverURI, username, password, runtimeService);
@@ -73,7 +72,7 @@ public class HassioEnginePlugin extends AbstractProcessEnginePlugin {
                                            RuntimeService runtimeService) throws Exception {
 
         if (serverURI != null) {
-            String mqttProcessStartTopic = System.getProperty(HassioConsts.EnginePlugin.MQTT_PROCESS_START_TOPIC);
+            String mqttProcessStartTopic = System.getProperty(PluginConsts.EnginePlugin.MQTT_PROCESS_START_TOPIC);
 
             LOGGER.info("Instantiate ProcessStarterService with following details: runtimeService = {}, " +
                             "mqttStartTopic = {}, " +
@@ -103,7 +102,7 @@ public class HassioEnginePlugin extends AbstractProcessEnginePlugin {
     private void initMqttToSignalService(String serverURI, String username, String password,
                                            RuntimeService runtimeService) throws Exception {
         if (serverURI != null) {
-            String mqttToBpmnSignalTopic = System.getProperty(HassioConsts.EnginePlugin.MQTT_TO_BPMN_SIGNAL_TOPIC);
+            String mqttToBpmnSignalTopic = System.getProperty(PluginConsts.EnginePlugin.MQTT_TO_BPMN_SIGNAL_TOPIC);
             String[] extractedTopics = extractTopics(mqttToBpmnSignalTopic);
 
             LOGGER.info("Instantiate MqttToSignalService with following details: runtimeService = {}, " +
@@ -141,7 +140,7 @@ public class HassioEnginePlugin extends AbstractProcessEnginePlugin {
      * Example: "topic/one/a,topic/one/b,topic/two"
      */
     private String[] extractTopics(String topics) {
-        final String separator = HassioConsts.EnginePlugin.MQTT_TOPIC_SEPERATOR;
+        final String separator = PluginConsts.EnginePlugin.MQTT_TOPIC_SEPERATOR;
 
         if (topics.contains(separator)) {
             return topics.split(separator);

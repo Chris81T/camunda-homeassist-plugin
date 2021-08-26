@@ -1,7 +1,7 @@
 package de.ckthomas.smarthome.camunda.connectors.homeassistant.common;
 
 import com.google.gson.Gson;
-import de.ckthomas.smarthome.camunda.connectors.homeassistant.HassioConsts;
+import de.ckthomas.smarthome.camunda.PluginConsts;
 import de.ckthomas.smarthome.exceptions.HassioException;
 import de.ckthomas.smarthome.services.RestService;
 import de.ckthomas.smarthome.services.RestServiceFactory;
@@ -77,7 +77,7 @@ public class CommonConnector extends AbstractConnector<CommonRequest, CommonResp
     }
 
     protected String createServiceUrl(String domain, String service) {
-        return createUrl(HassioConsts.Common.PATH_SERVICES, domain, service);
+        return createUrl(PluginConsts.Common.PATH_SERVICES, domain, service);
     }
 
     /**
@@ -88,9 +88,9 @@ public class CommonConnector extends AbstractConnector<CommonRequest, CommonResp
      */
     private RestService getRestService(Map<String, Object> requestParameters) {
         if (RestServiceFactory.isNotInstantiated()) {
-            final String basePath = checkParam(this.basePath, HassioConsts.Common.BASE_PATH, requestParameters);
-            final String authKey = checkParam(this.authKey, HassioConsts.Common.AUTH_KEY, requestParameters);
-            final String authValue = checkParam(this.authValue, HassioConsts.Common.AUTH_VAL, requestParameters);
+            final String basePath = checkParam(this.basePath, PluginConsts.Common.BASE_PATH, requestParameters);
+            final String authKey = checkParam(this.authKey, PluginConsts.Common.AUTH_KEY, requestParameters);
+            final String authValue = checkParam(this.authValue, PluginConsts.Common.AUTH_VAL, requestParameters);
             return RestServiceFactory.getInstance(basePath, authKey, authValue);
         } else {
             return RestServiceFactory.getInstance();
@@ -134,10 +134,10 @@ public class CommonConnector extends AbstractConnector<CommonRequest, CommonResp
         Map<String, Object> requestParameters = request.getRequestParameters();
         LOGGER.info("About to execute CommonConnector with given request parameters = {}", requestParameters);
 
-        final String jsonBody = (String) requestParameters.get(HassioConsts.Common.KEY_JSON_BODY);
-        final String path = (String) requestParameters.get(HassioConsts.Common.KEY_URL_PATH);
-        final String domain = (String) requestParameters.get(HassioConsts.Common.KEY_URL_DOMAIN);
-        final String service = (String) requestParameters.get(HassioConsts.Common.KEY_URL_SERVICE);
+        final String jsonBody = (String) requestParameters.get(PluginConsts.Common.KEY_JSON_BODY);
+        final String path = (String) requestParameters.get(PluginConsts.Common.KEY_URL_PATH);
+        final String domain = (String) requestParameters.get(PluginConsts.Common.KEY_URL_DOMAIN);
+        final String service = (String) requestParameters.get(PluginConsts.Common.KEY_URL_SERVICE);
 
         return perform(request, createUrl(path, domain, service), jsonBody);
     }

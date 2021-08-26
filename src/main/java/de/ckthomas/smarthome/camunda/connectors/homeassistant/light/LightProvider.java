@@ -1,8 +1,7 @@
 package de.ckthomas.smarthome.camunda.connectors.homeassistant.light;
 
-import de.ckthomas.smarthome.camunda.connectors.homeassistant.HassioConsts;
+import de.ckthomas.smarthome.camunda.PluginConsts;
 import de.ckthomas.smarthome.camunda.connectors.homeassistant.common.CommonProvider;
-import de.ckthomas.smarthome.camunda.connectors.homeassistant.switchonoff.SwitchConnector;
 import org.camunda.connect.spi.Connector;
 
 /**
@@ -16,7 +15,7 @@ public class LightProvider extends CommonProvider {
 
     @Override
     public String getConnectorId() {
-        return HassioConsts.ConnectorIds.ID_LIGHT;
+        return PluginConsts.ConnectorIds.ID_LIGHT;
     }
 
     @Override

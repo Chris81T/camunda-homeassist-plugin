@@ -1,6 +1,6 @@
 package de.ckthomas.smarthome.camunda.connectors.homeassistant.cover;
 
-import de.ckthomas.smarthome.camunda.connectors.homeassistant.HassioConsts;
+import de.ckthomas.smarthome.camunda.PluginConsts;
 import de.ckthomas.smarthome.camunda.connectors.homeassistant.common.CommonConnector;
 import de.ckthomas.smarthome.camunda.connectors.homeassistant.common.CommonRequest;
 import org.camunda.connect.spi.ConnectorResponse;
@@ -28,11 +28,11 @@ public class CoverConnector extends CommonConnector {
         Map<String, Object> requestParameters = request.getRequestParameters();
         LOGGER.info("About to execute {} with given request parameters = {}", getClass().getSimpleName(), requestParameters);
 
-        final String service = (String) requestParameters.get(HassioConsts.Common.KEY_URL_SERVICE);
-        final String url = createServiceUrl(HassioConsts.Cover.DOMAIN, service);
+        final String service = (String) requestParameters.get(PluginConsts.Common.KEY_URL_SERVICE);
+        final String url = createServiceUrl(PluginConsts.Cover.DOMAIN, service);
 
         Map<String, Object> jsonMap = new HashMap<>();
-        jsonMap.put(HassioConsts.Cover.JSON_BODY_ENTITY_ID, requestParameters.get(HassioConsts.Cover.JSON_BODY_ENTITY_ID));
+        jsonMap.put(PluginConsts.Cover.JSON_BODY_ENTITY_ID, requestParameters.get(PluginConsts.Cover.JSON_BODY_ENTITY_ID));
         final String jsonBody = toJson(jsonMap);
 
         return super.perform(request, url, jsonBody);

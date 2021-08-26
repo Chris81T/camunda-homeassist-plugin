@@ -1,6 +1,6 @@
 package de.ckthomas.smarthome.camunda.connectors.homeassistant.light;
 
-import de.ckthomas.smarthome.camunda.connectors.homeassistant.HassioConsts;
+import de.ckthomas.smarthome.camunda.PluginConsts;
 import de.ckthomas.smarthome.camunda.connectors.homeassistant.common.CommonConnector;
 import de.ckthomas.smarthome.camunda.connectors.homeassistant.common.CommonRequest;
 import org.camunda.connect.spi.ConnectorResponse;
@@ -53,11 +53,11 @@ public class LightConnector extends CommonConnector {
         Map<String, Object> requestParameters = request.getRequestParameters();
         LOGGER.info("About to execute {} with given request parameters = {}", getClass().getSimpleName(), requestParameters);
 
-        final String service = (String) requestParameters.get(HassioConsts.Common.KEY_URL_SERVICE);
-        final String url = createServiceUrl(HassioConsts.Light.DOMAIN, service);
+        final String service = (String) requestParameters.get(PluginConsts.Common.KEY_URL_SERVICE);
+        final String url = createServiceUrl(PluginConsts.Light.DOMAIN, service);
 
         Map<String, Object> jsonMap = new HashMap<>();
-        jsonMap.put(HassioConsts.Light.JSON_BODY_ENTITY_ID, requestParameters.get(HassioConsts.Light.JSON_BODY_ENTITY_ID));
+        jsonMap.put(PluginConsts.Light.JSON_BODY_ENTITY_ID, requestParameters.get(PluginConsts.Light.JSON_BODY_ENTITY_ID));
 
         optionalParamKeys.stream()
                 .filter(requestParameters::containsKey)

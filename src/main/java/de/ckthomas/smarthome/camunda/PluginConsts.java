@@ -1,4 +1,4 @@
-package de.ckthomas.smarthome.camunda.connectors.homeassistant;
+package de.ckthomas.smarthome.camunda;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * @author Christian Thomas
  */
-public abstract class HassioConsts {
+public abstract class PluginConsts {
     public abstract class ConnectorIds {
         public static final String ID_COMMON = "hassio-common";
         public static final String ID_SWITCH = "hassio-switch";
@@ -53,5 +53,10 @@ public abstract class HassioConsts {
 
         public static final String MQTT_PROCESS_START_TOPIC = "mqttProcessStartTopic";
         public static final String MQTT_PROCESS_START_TOPIC_DEFAULT = "camundahassio/processstart";
+    }
+
+    public abstract class EngineListener {
+        public static final String ELEM_SIGNAL_REF = "signalRef";
+        public static final String ELEM_SIGNAL_NAME = "name";
     }
 }

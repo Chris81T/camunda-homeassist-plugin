@@ -1,10 +1,8 @@
 package de.ckthomas.smarthome.camunda.connectors.homeassistant.switchonoff;
 
-import de.ckthomas.smarthome.camunda.connectors.homeassistant.HassioConsts;
+import de.ckthomas.smarthome.camunda.PluginConsts;
 import de.ckthomas.smarthome.camunda.connectors.homeassistant.common.CommonProvider;
 import org.camunda.connect.spi.Connector;
-
-import java.util.Arrays;
 
 /**
  * @author Christian Thomas
@@ -17,7 +15,7 @@ public class SwitchProvider extends CommonProvider {
 
     @Override
     public String getConnectorId() {
-        return HassioConsts.ConnectorIds.ID_SWITCH;
+        return PluginConsts.ConnectorIds.ID_SWITCH;
     }
 
     @Override

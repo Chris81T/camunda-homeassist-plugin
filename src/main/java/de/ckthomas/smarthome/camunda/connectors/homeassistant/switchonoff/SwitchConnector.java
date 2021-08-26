@@ -1,6 +1,6 @@
 package de.ckthomas.smarthome.camunda.connectors.homeassistant.switchonoff;
 
-import de.ckthomas.smarthome.camunda.connectors.homeassistant.HassioConsts;
+import de.ckthomas.smarthome.camunda.PluginConsts;
 import de.ckthomas.smarthome.camunda.connectors.homeassistant.common.CommonConnector;
 import de.ckthomas.smarthome.camunda.connectors.homeassistant.common.CommonRequest;
 import org.camunda.connect.spi.ConnectorResponse;
@@ -26,11 +26,11 @@ public class SwitchConnector extends CommonConnector {
         Map<String, Object> requestParameters = request.getRequestParameters();
         LOGGER.info("About to execute {} with given request parameters = {}", getClass().getSimpleName(), requestParameters);
 
-        final String service = (String) requestParameters.get(HassioConsts.Common.KEY_URL_SERVICE);
-        final String url = createServiceUrl(HassioConsts.Switch.DOMAIN, service);
+        final String service = (String) requestParameters.get(PluginConsts.Common.KEY_URL_SERVICE);
+        final String url = createServiceUrl(PluginConsts.Switch.DOMAIN, service);
 
         Map<String, Object> jsonMap = new HashMap<>();
-        jsonMap.put(HassioConsts.Switch.JSON_BODY_ENTITY_ID, requestParameters.get(HassioConsts.Switch.JSON_BODY_ENTITY_ID));
+        jsonMap.put(PluginConsts.Switch.JSON_BODY_ENTITY_ID, requestParameters.get(PluginConsts.Switch.JSON_BODY_ENTITY_ID));
         final String jsonBody = toJson(jsonMap);
 
         return super.perform(request, url, jsonBody);

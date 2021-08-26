@@ -1,5 +1,6 @@
 package de.ckthomas.smarthome.camunda.listeners;
 
+import de.ckthomas.smarthome.services.MqttToSignalServiceFactory;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.ExecutionListener;
 
@@ -8,18 +9,23 @@ import org.camunda.bpm.engine.delegate.ExecutionListener;
  */
 public class MqttExecutionEndListener extends AbstractMqttExecutionListener {
 
-    public MqttExecutionEndListener(String signalName) {
-        super(signalName, MqttExecutionStartListener.class);
-        LOGGER.info("<> <> <> <> INSTANTIATE END LISTENER {}", this);
+    public MqttExecutionEndListener(String signalRef) {
+        super(signalRef, MqttExecutionStartListener.class);
+        LOGGER.debug("Instantiate Mqtt END Listener = {}", this);
     }
 
     @Override
     public void notify(DelegateExecution execution) throws Exception {
-        final String executionId = execution.getId();
+        final String processInstanceId = execution.getProcessInstanceId();
         final String activityInstanceId = execution.getActivityInstanceId();
-        final String currentActivityId = execution.getCurrentActivityId();
+        final String topic = getSignalName(execution);
+        stopListeningToTopic(processInstanceId, activityInstanceId, topic);
+    }
 
-        LOGGER.info("<> <> <> <> <> MQTT END LISTENER {}, {}, {}", executionId, activityInstanceId, currentActivityId);
+    private void stopListeningToTopic(String topic, String processInstanceId, String activityInstanceId) {
+        LOGGER.info("About to stop listening to Mqtt topic = {}, ProcessInstanceId = {}, " +
+                "ActivityInstanceID = {}", topic, processInstanceId, activityInstanceId);
+        MqttToSignalServiceFactory.removeRuntimeSubscription(topic, processInstanceId, activityInstanceId);
     }
 
 }

@@ -1,5 +1,6 @@
 package de.ckthomas.smarthome.camunda.listeners;
 
+import de.ckthomas.smarthome.camunda.PluginConsts;
 import org.camunda.bpm.engine.delegate.ExecutionListener;
 import org.camunda.bpm.engine.impl.bpmn.parser.AbstractBpmnParseListener;
 import org.camunda.bpm.engine.impl.pvm.process.ActivityImpl;
@@ -18,28 +19,19 @@ public class HassioEngineListener extends AbstractBpmnParseListener {
     @Override
     public void parseBoundarySignalEventDefinition(Element signalEventDefinition, boolean interrupting, ActivityImpl signalActivity) {
         super.parseBoundarySignalEventDefinition(signalEventDefinition, interrupting, signalActivity);
+        handleElementWithActivityImpl(signalEventDefinition, signalActivity);
     }
 
     @Override
     public void parseIntermediateSignalCatchEventDefinition(Element signalEventDefinition, ActivityImpl signalActivity) {
         super.parseIntermediateSignalCatchEventDefinition(signalEventDefinition, signalActivity);
+        handleElementWithActivityImpl(signalEventDefinition, signalActivity);
+    }
 
-        final String signalRef = signalEventDefinition.attribute("signalRef");
-
-        signalEventDefinition.elements().forEach(element -> LOGGER.info(">>>> FOREACH ELEMENT = {}", element));
-
-        signalEventDefinition.attributes().forEach(attribute -> LOGGER.info(">>>> ATTR = {}, attribute() = {}", attribute,
-                signalEventDefinition.attribute(attribute)));
-
-
-        signalActivity.getParentFlowScopeActivity();
-
-
-
-        LOGGER.info("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX signalRef = {}", signalRef);
-
-        addExecutionListener(signalActivity, new MqttExecutionStartListener(signalRef), ExecutionListener.EVENTNAME_START);
-        addExecutionListener(signalActivity, new MqttExecutionEndListener(signalRef), ExecutionListener.EVENTNAME_END);
+    private void handleElementWithActivityImpl(Element eventDefinition, ActivityImpl activity) {
+        final String signalRef = eventDefinition.attribute(PluginConsts.EngineListener.ELEM_SIGNAL_REF);
+        addExecutionListener(activity, new MqttExecutionStartListener(signalRef), ExecutionListener.EVENTNAME_START);
+        addExecutionListener(activity, new MqttExecutionEndListener(signalRef), ExecutionListener.EVENTNAME_END);
     }
 
     private void addExecutionListener(ActivityImpl activity, ExecutionListener executionListener, String eventName) {
