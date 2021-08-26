@@ -38,6 +38,9 @@ public class MqttToSignalService extends AbstractMqttService {
                 LOGGER.info("Found JSON Payload = {}. Parse JSON with key + value as process variable map = {}",
                         payload, processVariables);
                 signalEventBuilder.setVariables(processVariables);
+            } else {
+                // TODO handle simple values - what should the process var name? Last part of the topic?
+                // TODO handle array of values (primitive and complex json ones) Last part of the topic is the var name for the list?
             }
 
             signalEventBuilder.send();
