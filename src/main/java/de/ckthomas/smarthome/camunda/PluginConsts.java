@@ -58,5 +58,6 @@ public abstract class PluginConsts {
     public abstract class EngineListener {
         public static final String ELEM_SIGNAL_REF = "signalRef";
         public static final String ELEM_SIGNAL_NAME = "name";
+        public static final String EXT_PROP_RESULT_VAR_NAME = "resultVariable";
     }
 }

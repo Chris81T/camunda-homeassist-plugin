@@ -2,7 +2,6 @@ package de.ckthomas.smarthome.camunda.listeners;
 
 import de.ckthomas.smarthome.services.MqttToSignalServiceFactory;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
-import org.camunda.bpm.engine.delegate.ExecutionListener;
 
 /**
  * @author Christian Thomas
@@ -25,7 +24,7 @@ public class MqttExecutionEndListener extends AbstractMqttExecutionListener {
     private void stopListeningToTopic(String topic, String processInstanceId, String activityInstanceId) {
         LOGGER.info("About to stop listening to Mqtt topic = {}, ProcessInstanceId = {}, " +
                 "ActivityInstanceID = {}", topic, processInstanceId, activityInstanceId);
-        MqttToSignalServiceFactory.removeRuntimeSubscription(topic, processInstanceId, activityInstanceId);
+        MqttToSignalServiceFactory.destructRuntimeSubscription(topic, processInstanceId, activityInstanceId);
     }
 
 }

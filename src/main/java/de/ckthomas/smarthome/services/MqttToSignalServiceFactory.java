@@ -5,10 +5,7 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -23,12 +20,15 @@ public abstract class MqttToSignalServiceFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(MqttToSignalServiceFactory.class);
 
     /**
-     * key is the topic
-     * List of string are all avtive/pending executions (processInstanceId:activityInstanceId combination)
+     * key is a processInstanceId:activityInstanceId combination
      */
-    private static final Map<String, List<String>> runtimeSubscriptions = new HashMap<>();
+    private static final Map<String, MqttToSignalService> runtimeMqttServices = new HashMap<>();
 
     private static MqttToSignalService mqttToSignalService = null;
+
+    private static String serverURI = null;
+    private static String username = null;
+    private static char[] password = null;
 
     private static MqttToSignalService createInstance(String uniqueClientId, RuntimeService runtimeService, String serverURI,
                                                   String username, char[] password, String... mqttProcessStartTopics) {
@@ -54,8 +54,14 @@ public abstract class MqttToSignalServiceFactory {
         return mqttToSignalService;
     }
 
+    public static void setConnectionDetailsGlobally(String serverURI, String username, char[] password) {
+        MqttToSignalServiceFactory.serverURI = serverURI;
+        MqttToSignalServiceFactory.username = username;
+        MqttToSignalServiceFactory.password = password;
+    }
+
     public static MqttToSignalService getInstance(RuntimeService runtimeService, String... mqttProcessStartTopics) {
-        return getInstance(runtimeService, null, null, null, mqttProcessStartTopics);
+        return getInstance(runtimeService, serverURI, username, password, mqttProcessStartTopics);
     }
 
     public static MqttToSignalService getInstance(RuntimeService runtimeService, String serverURI, String username,
@@ -95,54 +101,28 @@ public abstract class MqttToSignalServiceFactory {
      * @param processInstanceId
      * @param activityInstanceId
      */
-    public static void addRuntimeSubscription(String topic, String processInstanceId, String activityInstanceId) {
-        if (isNotInstantiated()) {
-            LOGGER.error("Could not add a runtime subscription. No instance of the service is running! Normally during " +
-                    "start-up an instance should be created! Abort this operation!");
-            return;
-        }
+    public static void constructRuntimeSubscription(String topic, String processInstanceId, String activityInstanceId,
+                                                    RuntimeService runtimeService, Optional<String> resultVariable) {
 
-        if (!runtimeSubscriptions.containsKey(topic)) {
-            getCurrentInstance().subscribe(topic);
-            List<String> newList = new ArrayList<>();
-            newList.add(combineInstanceIds(processInstanceId, activityInstanceId));
-            runtimeSubscriptions.put(topic, newList);
+        final String combination = combineInstanceIds(processInstanceId, activityInstanceId);
+        if (!runtimeMqttServices.containsKey(combination)) {
+            final MqttToSignalService newInstance = getInstance(runtimeService, topic);
+            newInstance.setResultVariableForNonJsonMessages(resultVariable);
+            runtimeMqttServices.put(combination, newInstance);
         } else {
-            List<String> subscriptors = runtimeSubscriptions.get(topic);
-            final String combination = combineInstanceIds(processInstanceId, activityInstanceId);
-            if (!subscriptors.contains(combination)) {
-                subscriptors.add(combination);
-            } else {
-                LOGGER.warn("A combination of ProcessInstanceId and ActivityInstanceId already exists?! Value = {}",
-                        combination);
-            }
+            LOGGER.warn("MqttToSignalService for id = {} already exist! Do nothing!", combination);
         }
     }
 
-    public static void removeRuntimeSubscription(String topic, String processInstanceId, String activityInstanceId) {
-        if (isNotInstantiated()) {
-            LOGGER.warn("Could not remove a runtime subscription. No instance of the service is running! So nothing to " +
-                    "do.");
-            return;
-        }
+    public static void destructRuntimeSubscription(String topic, String processInstanceId, String activityInstanceId) {
+        final String combination = combineInstanceIds(processInstanceId, activityInstanceId);
 
-        if (runtimeSubscriptions.containsKey(topic)) {
-            final String combination = combineInstanceIds(processInstanceId, activityInstanceId);
-            List<String> subscriptors = runtimeSubscriptions.get(topic);
-            List<String> newList = subscriptors.stream()
-                    .filter(combi -> !combi.equals(combination)).collect(Collectors.toList());
-
-            if (newList.isEmpty()) {
-                LOGGER.info("Close/remove runtime subscription for topic = {}", topic);
-                getCurrentInstance().unsubscribe(topic);
-                runtimeSubscriptions.remove(topic);
-            } else {
-                runtimeSubscriptions.put(topic, newList);
-            }
+        if (runtimeMqttServices.containsKey(combination)) {
+            MqttToSignalService runningInstance = runtimeMqttServices.remove(combination);
+            runningInstance.unsubscribe(topic);
         } else {
-            LOGGER.warn("Could not unsubscribe, while given topic = {} is unknown!", topic);
+            LOGGER.warn("Could not unsubscribe/destruct, while given id = {} is unknown! Do nothing!", combination);
         }
-
     }
 
 }

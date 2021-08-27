@@ -8,11 +8,14 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Christian Thomas
  */
 public class MqttToSignalService extends AbstractMqttService {
+
+    private Optional<String> resultVariable = Optional.empty();
 
     MqttToSignalService(RuntimeService runtimeService, String serverURI, String username, char[] password,
                         String uniqueClientId, String... mqttProcessStartTopic) {
@@ -51,4 +54,7 @@ public class MqttToSignalService extends AbstractMqttService {
         }
     }
 
+    public void setResultVariableForNonJsonMessages(Optional<String> resultVariable) {
+        this.resultVariable = resultVariable;
+    }
 }

@@ -3,8 +3,13 @@ package de.ckthomas.smarthome.camunda.listeners;
 import de.ckthomas.smarthome.camunda.PluginConsts;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.ExecutionListener;
+import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperties;
+import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.Optional;
 
 public abstract class AbstractMqttExecutionListener implements ExecutionListener {
 
@@ -29,6 +34,22 @@ public abstract class AbstractMqttExecutionListener implements ExecutionListener
         }
 
         return signalName;
+    }
+
+    protected Optional<String> getResultVariableName(DelegateExecution execution) {
+        Collection<CamundaProperty> extensionProperties = execution.getBpmnModelElementInstance()
+                .getExtensionElements()
+                .getElementsQuery()
+                .filterByType(CamundaProperties.class)
+                .singleResult()
+                .getCamundaProperties();
+
+        return extensionProperties.stream()
+                .filter(camundaProperty -> PluginConsts
+                        .EngineListener
+                        .EXT_PROP_RESULT_VAR_NAME.equals(camundaProperty.getCamundaName()))
+                .findFirst()
+                .map(camundaProperty -> camundaProperty.getCamundaValue());
     }
 
 }

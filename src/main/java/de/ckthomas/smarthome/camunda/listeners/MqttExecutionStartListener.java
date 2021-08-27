@@ -1,7 +1,10 @@
 package de.ckthomas.smarthome.camunda.listeners;
 
 import de.ckthomas.smarthome.services.MqttToSignalServiceFactory;
+import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
+
+import java.util.Optional;
 
 /**
  * @author Christian Thomas
@@ -18,13 +21,30 @@ public class MqttExecutionStartListener extends AbstractMqttExecutionListener {
         final String processInstanceId = execution.getProcessInstanceId();
         final String activityInstanceId = execution.getActivityInstanceId();
         final String topic = getSignalName(execution);
-        startListeningToTopic(topic, processInstanceId, activityInstanceId);
+        final Optional<String> resultVariable = getResultVariableName(execution);
+
+        startListeningToTopic(
+                execution.getProcessEngineServices().getRuntimeService(),
+                topic,
+                processInstanceId,
+                activityInstanceId,
+                resultVariable
+        );
     }
 
-    private void startListeningToTopic(String topic, String processInstanceId, String activityInstanceId) {
+    private void startListeningToTopic(RuntimeService runtimeService, String topic, String processInstanceId,
+                                       String activityInstanceId, Optional<String> resultVariable) {
         LOGGER.info("About to start listening over factory to Mqtt topic = {}, ProcessInstanceId = {}, " +
-                "ActivityInstanceID = {}", topic, processInstanceId, activityInstanceId);
-        MqttToSignalServiceFactory.addRuntimeSubscription(topic, processInstanceId, activityInstanceId);
+                "ActivityInstanceID = {}, resultVariable = {}", topic, processInstanceId, activityInstanceId,
+                resultVariable);
+
+        MqttToSignalServiceFactory.constructRuntimeSubscription(
+                topic,
+                processInstanceId,
+                activityInstanceId,
+                runtimeService,
+                resultVariable
+        );
     }
 
 }
