@@ -1,5 +1,6 @@
 package de.ckthomas.smarthome.sandbox;
 
+import de.ckthomas.smarthome.services.MqttToSignalServiceFactory;
 import de.ckthomas.smarthome.services.ProcessStarterService;
 import de.ckthomas.smarthome.services.ProcessStarterServiceFactory;
 import org.eclipse.paho.client.mqttv3.IMqttClient;
@@ -7,22 +8,47 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class MqttSample {
 
     private static void listonToMqttViaService(String password) throws MqttException, InterruptedException {
-        ProcessStarterService processStarterService = ProcessStarterServiceFactory.getInstance(
-                null,
-                "camundahassio/processstart",
+//        ProcessStarterService processStarterService = ProcessStarterServiceFactory.getInstance(
+//                null,
+//                "camundahassio/processstart",
+//                "tcp://jarvis.fritz.box:1883",
+//                "hassio",
+//                password != null ? password.toCharArray() : null
+//        );
+//
+//        processStarterService.start();
+//        System.out.println("hold the instance - manually termination is required");
+
+        MqttToSignalServiceFactory.setConnectionDetailsGlobally(
                 "tcp://jarvis.fritz.box:1883",
                 "hassio",
                 password != null ? password.toCharArray() : null
         );
 
-        processStarterService.start();
-        System.out.println("hold the instance - manually termination is required");
+        MqttToSignalServiceFactory.constructRuntimeSubscription(
+                "homeassistant/weather/mcu_home/state",
+                "123",
+                "abc",
+                null,
+                Optional.of("resultVariable")
+        );
+
+// ACHTUNG: Gegen den gleichen Broker geht leider nicht!
+//        MqttToSignalServiceFactory.constructRuntimeSubscription(
+//                "homeassistant/weather/mcu_home/temperature",
+//                "123",
+//                "xyz",
+//                null,
+//                Optional.of("resultVariable")
+//        );
+
     }
 
     private static void listenToMqttSwitch(String password) throws MqttException, InterruptedException {
@@ -57,6 +83,7 @@ public class MqttSample {
 
     public static void main(String[] args) throws Exception {
         listonToMqttViaService(args[0]);
+        listenToMqttSwitch(args[0]);
         System.out.println("Finished...");
     }
 

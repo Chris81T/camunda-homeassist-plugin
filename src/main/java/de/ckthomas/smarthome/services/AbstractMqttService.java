@@ -5,7 +5,6 @@ import com.google.gson.internal.LinkedTreeMap;
 import de.ckthomas.smarthome.exceptions.HassioException;
 import org.camunda.bpm.engine.RuntimeService;
 import org.eclipse.paho.client.mqttv3.*;
-import org.python.antlr.ast.Exec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +22,8 @@ public abstract class AbstractMqttService implements MqttCallback {
         UNKNOWN
     }
 
+    protected IMqttClient mqttClient = null;
+
     protected final Logger LOGGER;
 
     protected final String serverURI;
@@ -33,7 +34,6 @@ public abstract class AbstractMqttService implements MqttCallback {
     protected final String[] mqttTopics;
 
     protected final RuntimeService runtimeService;
-    protected IMqttClient mqttClient = null;
     protected final Gson gson = new Gson();
 
     protected AbstractMqttService(Class<?> loggerClass, RuntimeService runtimeService, String serverURI,
@@ -66,10 +66,6 @@ public abstract class AbstractMqttService implements MqttCallback {
 
             if (ArrayList.class.equals(deserializedVal.getClass())) {
                 return ValueTypes.ARRAY;
-            }
-
-            if (LinkedTreeMap.class.equals(deserializedVal.getClass())) {
-                return ValueTypes.JSON_ENTRY;
             }
 
             // all the special values are check, so it should be a primitive value
