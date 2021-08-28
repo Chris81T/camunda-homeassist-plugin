@@ -108,6 +108,7 @@ public abstract class MqttToSignalServiceFactory {
         if (!runtimeMqttServices.containsKey(combination)) {
             final MqttToSignalService newInstance = getInstance(runtimeService, topic);
             newInstance.setResultVariableForNonJsonMessages(resultVariable);
+            newInstance.start();
             runtimeMqttServices.put(combination, newInstance);
         } else {
             LOGGER.warn("MqttToSignalService for id = {} already exist! Do nothing!", combination);
@@ -120,6 +121,7 @@ public abstract class MqttToSignalServiceFactory {
         if (runtimeMqttServices.containsKey(combination)) {
             MqttToSignalService runningInstance = runtimeMqttServices.remove(combination);
             runningInstance.unsubscribe(topic);
+            runningInstance.close();
         } else {
             LOGGER.warn("Could not unsubscribe/destruct, while given id = {} is unknown! Do nothing!", combination);
         }

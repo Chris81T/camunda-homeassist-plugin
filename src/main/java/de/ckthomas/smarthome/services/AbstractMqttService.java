@@ -1,6 +1,7 @@
 package de.ckthomas.smarthome.services;
 
 import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
 import de.ckthomas.smarthome.exceptions.HassioException;
 import org.camunda.bpm.engine.RuntimeService;
 import org.eclipse.paho.client.mqttv3.*;
@@ -8,10 +9,19 @@ import org.python.antlr.ast.Exec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+
 /**
  * @author Christian Thomas
  */
 public abstract class AbstractMqttService implements MqttCallback {
+
+    protected enum ValueTypes {
+        JSON_ENTRY,
+        PRIMITIVE_ENTRY,
+        ARRAY,
+        UNKNOWN
+    }
 
     protected final Logger LOGGER;
 
@@ -46,20 +56,28 @@ public abstract class AbstractMqttService implements MqttCallback {
      */
     protected abstract void handleMessage(String topic, MqttMessage message) throws HassioException;
 
-    /**
-     * Helper method to check, if given string is a JSON or not.
-     *
-     * NOTE: If a simple String is given, also false will be returned!
-     *
-     * @param valToCheck
-     * @return true or false
-     */
-    protected boolean isJson(String valToCheck) {
+    protected ValueTypes checkValueType(String valToCheck) {
         try {
-            Object json = gson.fromJson(valToCheck, Object.class);
-            return !String.class.equals(json.getClass()) ? true : false;
+            Object deserializedVal = gson.fromJson(valToCheck, Object.class);
+
+            if (LinkedTreeMap.class.equals(deserializedVal.getClass())) {
+                return ValueTypes.JSON_ENTRY;
+            }
+
+            if (ArrayList.class.equals(deserializedVal.getClass())) {
+                return ValueTypes.ARRAY;
+            }
+
+            if (LinkedTreeMap.class.equals(deserializedVal.getClass())) {
+                return ValueTypes.JSON_ENTRY;
+            }
+
+            // all the special values are check, so it should be a primitive value
+            return ValueTypes.PRIMITIVE_ENTRY;
+
         } catch (Exception e) {
-            return false;
+            LOGGER.error("Could not identify the required value type!", e);
+            return ValueTypes.UNKNOWN;
         }
     }
 
