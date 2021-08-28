@@ -114,14 +114,11 @@ public class HassioEnginePlugin extends AbstractProcessEnginePlugin {
                             "password = {}",
                     runtimeService, mqttToBpmnSignalTopic, extractedTopics, serverURI, username, password);
 
-            MqttToSignalServiceFactory.setConnectionDetailsGlobally(
-                    serverURI,
-                    username,
-                    password != null ? password.toCharArray() : null
-            );
-
             MqttToSignalService mqttToSignalService = MqttToSignalServiceFactory.getInstance(
                     runtimeService,
+                    serverURI,
+                    username,
+                    password != null ? password.toCharArray() : null,
                     extractedTopics
             );
 

@@ -2,6 +2,7 @@ package de.ckthomas.smarthome.services;
 
 import com.google.gson.reflect.TypeToken;
 import de.ckthomas.smarthome.exceptions.HassioException;
+import kotlin.Pair;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.runtime.SignalEventReceivedBuilder;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -17,7 +18,14 @@ import java.util.Optional;
  */
 public class MqttToSignalService extends AbstractMqttService {
 
-    private Optional<String> resultVariable = Optional.empty();
+    /**
+     * outer key is the topic
+     * List holds a bunch of pair
+     * pair key is a processInstanceId:activityInstanceId combination
+     * pair value is the resultVariable name
+     */
+    private static final Map<String, List<Pair<String, Optional<String>>>> tempRuntimeSubscriptions = new HashMap<>();
+
 
     MqttToSignalService(RuntimeService runtimeService, String serverURI, String username, char[] password,
                         String uniqueClientId, String... mqttProcessStartTopic) {
@@ -89,7 +97,9 @@ public class MqttToSignalService extends AbstractMqttService {
                 }
             }
 
-            signalEventBuilder.send();
+            signalEventBuilder
+                    .executionId("") // executionId – the id of the process instance or the execution to deliver the signal to
+                    .send();
 
         } catch (Exception e) {
             throw new HassioException("Could not handle MqttMessage to transfer it to a bpmn signal! Payload = " +
@@ -97,7 +107,45 @@ public class MqttToSignalService extends AbstractMqttService {
         }
     }
 
-    public void setResultVariableForNonJsonMessages(Optional<String> resultVariable) {
-        this.resultVariable = resultVariable;
+    private String combineInstanceIds(String processInstanceId, String activityInstanceId) {
+        return new StringBuilder()
+                .append(processInstanceId)
+                .append(":")
+                .append(activityInstanceId)
+                .toString();
     }
+
+    /**
+     * Useful to subscribe during process runtime execution a specific topic
+     *
+     * @param topic
+     * @param processInstanceId
+     * @param activityInstanceId
+     */
+    public void addTempRuntimeSubscription(String topic, String processInstanceId, String activityInstanceId,
+                                           Optional<String> resultVariable) {
+
+        final String combination = combineInstanceIds(processInstanceId, activityInstanceId);
+        if (!tempRuntimeSubscriptions.containsKey(combination)) {
+            final MqttToSignalService newInstance = getInstance(runtimeService, topic);
+            newInstance.setResultVariableForNonJsonMessages(resultVariable);
+            newInstance.start();
+            tempRuntimeSubscriptions.put(combination, newInstance);
+        } else {
+            LOGGER.warn("MqttToSignalService for id = {} already exist! Do nothing!", combination);
+        }
+    }
+
+    public void removeTempRuntimeSubscription(String topic, String processInstanceId, String activityInstanceId) {
+        final String combination = combineInstanceIds(processInstanceId, activityInstanceId);
+
+        if (tempRuntimeSubscriptions.containsKey(combination)) {
+            MqttToSignalService runningInstance = tempRuntimeSubscriptions.remove(combination);
+            runningInstance.unsubscribe(topic);
+            runningInstance.close();
+        } else {
+            LOGGER.warn("Could not unsubscribe/destruct, while given id = {} is unknown! Do nothing!", combination);
+        }
+    }
+
 }
