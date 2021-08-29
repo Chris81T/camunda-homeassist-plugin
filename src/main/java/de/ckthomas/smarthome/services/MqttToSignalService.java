@@ -1,6 +1,7 @@
 package de.ckthomas.smarthome.services;
 
 import com.google.gson.reflect.TypeToken;
+import de.ckthomas.smarthome.camunda.PluginConsts;
 import de.ckthomas.smarthome.exceptions.HassioException;
 import kotlin.Pair;
 import org.camunda.bpm.engine.RuntimeService;
@@ -44,56 +45,105 @@ public class MqttToSignalService extends AbstractMqttService {
         return builder;
     }
 
+    private Optional<String> determineVariableName(boolean processInstanceExists, Optional<String> resultVariable,
+                                         Optional<String> fallbackVariable) {
+        String determinedName = null;
+        resultVariable.ifPresentOrElse(
+                variableName -> {
+                    processVariables.put(variableName, primitiveValue);
+                    determinedName = variableName;
+                },
+                () -> {
+                    LOGGER.info("No resultValue is set! Check if a process instance id + fallbackVariable is set");
+                    if (processInstanceExists) {
+                        fallbackVariable.ifPresentOrElse(
+                                fallbackName -> {
+                                    processVariables.put(fallbackName, primitiveValue);
+                                },
+                                () -> {
+                                    LOGGER.warn("Neither a resultVariable nor a fallbackVariable is given. So it" +
+                                                    "is impossible to set the primitiveValue = {} as a process variable!",
+                                            primitiveValue);
+                                }
+                        );
+                    } else {
+                        processVariables.put(PluginConsts.EngineListener.SIGNAL_START_RESULT_VAR_NAME, primitiveValue);
+                    }
+                }
+        );
+    }
+
+    private Map<String, Object> prepareProcessVariables(String payload, ValueTypes valueType, boolean processInstanceExists,
+                                                        Optional<String> resultVariable, Optional<String> fallbackVariable) {
+        switch (valueType) {
+            case JSON_ENTRY: {
+                LOGGER.info("Found JSON_ENTRY payload = {}", payload);
+                Type mapType = new TypeToken<Map<String, Object>>() {}.getType();
+                Map<String, Object> processVariables = gson.fromJson(payload, mapType);
+                return processVariables;
+            }
+            case PRIMITIVE_ENTRY: {
+                LOGGER.info("Found JSON_ENTRY payload = {}", payload);
+                Object primitiveValue = gson.fromJson(payload, Object.class);
+
+                Map<String, Object> processVariables = new HashMap<>();
+
+                resultVariable.ifPresentOrElse(
+                        variableName -> {
+                            processVariables.put(variableName, primitiveValue);
+                        },
+                        () -> {
+                            LOGGER.info("No resultValue is set! Check if a process instance id + fallbackVariable is set");
+                            if (processInstanceExists) {
+                                fallbackVariable.ifPresentOrElse(
+                                        fallbackName -> {
+                                            processVariables.put(fallbackName, primitiveValue);
+                                        },
+                                        () -> {
+                                            LOGGER.warn("Neither a resultVariable nor a fallbackVariable is given. So it" +
+                                                    "is impossible to set the primitiveValue = {} as a process variable!",
+                                                    primitiveValue);
+                                        }
+                                );
+                            } else {
+                                processVariables.put(PluginConsts.EngineListener.SIGNAL_START_RESULT_VAR_NAME, primitiveValue);
+                            }
+                        }
+                );
+
+                return processVariables;
+            }
+            case ARRAY: {
+                LOGGER.info("Found ARRAY payload = {}", payload);
+                Type arrayType = new TypeToken<List<Object>>() {}.getType();
+                List<Object> arrayValue = gson.fromJson(payload, arrayType);
+
+                resultVariable.ifPresentOrElse(
+                        variableName -> {
+                            Map<String, Object> processVariables = new HashMap<>();
+                            processVariables.put(variableName, arrayValue);
+                        },
+                        () -> LOGGER.warn("No resultValue is set! Ignore the ARRAY payload!")
+                );
+
+                break;
+            }
+            case UNKNOWN: {
+                LOGGER.warn("Given payload = {} is unknown! Ignore it!", payload);
+            }
+        }
+    }
+
     @Override
     protected void handleMessage(String topic, MqttMessage message) throws HassioException {
         final String payload = message.toString();
         try {
             LOGGER.info("About to handle message for topic = {} with payload = {}", topic, message);
+            final ValueTypes valueType = checkValueType(payload);
+
             final SignalEventReceivedBuilder signalEventBuilder = runtimeService.createSignalEvent(topic);
 
-            switch (checkValueType(payload)) {
-                case JSON_ENTRY: {
-                    LOGGER.info("Found JSON_ENTRY payload = {}", payload);
-                    Type mapType = new TypeToken<Map<String, Object>>() {}.getType();
-                    Map<String, Object> processVariables = gson.fromJson(payload, mapType);
-                    setVariablesToEventBuilder(signalEventBuilder, processVariables);
-                    break;
-                }
-                case PRIMITIVE_ENTRY: {
-                    LOGGER.info("Found JSON_ENTRY payload = {}", payload);
-                    Object primitiveValue = gson.fromJson(payload, Object.class);
-
-                    resultVariable.ifPresentOrElse(
-                            resultVariable -> {
-                                Map<String, Object> processVariables = new HashMap<>();
-                                processVariables.put(resultVariable, primitiveValue);
-                                setVariablesToEventBuilder(signalEventBuilder, processVariables);
-                            },
-                            () -> LOGGER.warn("No resultValue is set! Ignore the JSON_ENTRY payload!")
-                    );
-
-                    break;
-                }
-                case ARRAY: {
-                    LOGGER.info("Found ARRAY payload = {}", payload);
-                    Type arrayType = new TypeToken<List<Object>>() {}.getType();
-                    List<Object> arrayValue = gson.fromJson(payload, arrayType);
-
-                    resultVariable.ifPresentOrElse(
-                            resultVariable -> {
-                                Map<String, Object> processVariables = new HashMap<>();
-                                processVariables.put(resultVariable, arrayValue);
-                                setVariablesToEventBuilder(signalEventBuilder, processVariables);
-                            },
-                            () -> LOGGER.warn("No resultValue is set! Ignore the ARRAY payload!")
-                    );
-
-                    break;
-                }
-                case UNKNOWN: {
-                    LOGGER.warn("Given payload = {} is unknown! Ignore it!", payload);
-                }
-            }
+            setVariablesToEventBuilder(signalEventBuilder, processVariables);
 
             signalEventBuilder
                     .executionId("") // executionId – the id of the process instance or the execution to deliver the signal to
