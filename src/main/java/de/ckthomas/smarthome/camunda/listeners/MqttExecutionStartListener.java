@@ -1,5 +1,6 @@
 package de.ckthomas.smarthome.camunda.listeners;
 
+import de.ckthomas.smarthome.services.MqttToSignalService;
 import de.ckthomas.smarthome.services.MqttToSignalServiceFactory;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
@@ -19,30 +20,19 @@ public class MqttExecutionStartListener extends AbstractMqttExecutionListener {
     @Override
     public void notify(DelegateExecution execution) throws Exception {
         final String processInstanceId = execution.getProcessInstanceId();
-        final String activityInstanceId = execution.getActivityInstanceId();
         final String topic = getSignalName(execution);
         final Optional<String> resultVariable = getResultVariableName(execution);
-
-        startListeningToTopic(
-                execution.getProcessEngineServices().getRuntimeService(),
-                topic,
-                processInstanceId,
-                activityInstanceId,
-                resultVariable
-        );
+        startListeningToTopic(topic, processInstanceId, resultVariable);
     }
 
-    private void startListeningToTopic(RuntimeService runtimeService, String topic, String processInstanceId,
-                                       String activityInstanceId, Optional<String> resultVariable) {
+    private void startListeningToTopic(String topic, String processInstanceId, Optional<String> resultVariable) {
         LOGGER.info("About to start listening over factory to Mqtt topic = {}, ProcessInstanceId = {}, " +
-                "ActivityInstanceID = {}, resultVariable = {}", topic, processInstanceId, activityInstanceId,
-                resultVariable);
+                "resultVariable = {}", topic, processInstanceId, resultVariable);
 
-        MqttToSignalServiceFactory.constructRuntimeSubscription(
+        MqttToSignalService mqttService = MqttToSignalServiceFactory.getCurrentInstance();
+        mqttService.addTempRuntimeSubscription(
                 topic,
                 processInstanceId,
-                activityInstanceId,
-                runtimeService,
                 resultVariable
         );
     }

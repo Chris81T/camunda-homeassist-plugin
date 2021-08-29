@@ -1,5 +1,6 @@
 package de.ckthomas.smarthome.camunda.listeners;
 
+import de.ckthomas.smarthome.services.MqttToSignalService;
 import de.ckthomas.smarthome.services.MqttToSignalServiceFactory;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 
@@ -16,15 +17,17 @@ public class MqttExecutionEndListener extends AbstractMqttExecutionListener {
     @Override
     public void notify(DelegateExecution execution) throws Exception {
         final String processInstanceId = execution.getProcessInstanceId();
-        final String activityInstanceId = execution.getActivityInstanceId();
         final String topic = getSignalName(execution);
-        stopListeningToTopic(processInstanceId, activityInstanceId, topic);
+        stopListeningToTopic(topic, processInstanceId);
     }
 
-    private void stopListeningToTopic(String topic, String processInstanceId, String activityInstanceId) {
-        LOGGER.info("About to stop listening to Mqtt topic = {}, ProcessInstanceId = {}, " +
-                "ActivityInstanceID = {}", topic, processInstanceId, activityInstanceId);
-        MqttToSignalServiceFactory.destructRuntimeSubscription(topic, processInstanceId, activityInstanceId);
+    private void stopListeningToTopic(String topic, String processInstanceId) {
+        LOGGER.info("About to stop listening to Mqtt topic = {}, ProcessInstanceId = {}", topic, processInstanceId);
+        MqttToSignalService mqttService = MqttToSignalServiceFactory.getCurrentInstance();
+        mqttService.removeTempRuntimeSubscription(
+                topic,
+                processInstanceId
+        );
     }
 
 }

@@ -47,30 +47,20 @@ public class MqttToSignalService extends AbstractMqttService {
 
     private Optional<String> determineVariableName(boolean processInstanceExists, Optional<String> resultVariable,
                                          Optional<String> fallbackVariable) {
-        String determinedName = null;
-        resultVariable.ifPresentOrElse(
-                variableName -> {
-                    processVariables.put(variableName, primitiveValue);
-                    determinedName = variableName;
-                },
-                () -> {
-                    LOGGER.info("No resultValue is set! Check if a process instance id + fallbackVariable is set");
-                    if (processInstanceExists) {
-                        fallbackVariable.ifPresentOrElse(
-                                fallbackName -> {
-                                    processVariables.put(fallbackName, primitiveValue);
-                                },
-                                () -> {
-                                    LOGGER.warn("Neither a resultVariable nor a fallbackVariable is given. So it" +
-                                                    "is impossible to set the primitiveValue = {} as a process variable!",
-                                            primitiveValue);
-                                }
-                        );
-                    } else {
-                        processVariables.put(PluginConsts.EngineListener.SIGNAL_START_RESULT_VAR_NAME, primitiveValue);
-                    }
-                }
-        );
+
+        String determinedName = resultVariable.orElseGet(() -> {
+            LOGGER.info("No resultValue is set! Check if a process instance id + fallbackVariable is set");
+            if (processInstanceExists) {
+                return fallbackVariable.orElseGet(() -> {
+                    LOGGER.warn("Neither a resultVariable nor a fallbackVariable is given. So it" +
+                                    "is impossible to determine a value as a process variable!");
+                    return null;
+                });
+            }
+            return PluginConsts.EngineListener.SIGNAL_START_RESULT_VAR_NAME;
+        });
+
+        return Optional.ofNullable(determinedName);
     }
 
     private Map<String, Object> prepareProcessVariables(String payload, ValueTypes valueType, boolean processInstanceExists,
@@ -83,33 +73,16 @@ public class MqttToSignalService extends AbstractMqttService {
                 return processVariables;
             }
             case PRIMITIVE_ENTRY: {
-                LOGGER.info("Found JSON_ENTRY payload = {}", payload);
+                LOGGER.info("Found PRIMITIVE_ENTRY payload = {}", payload);
                 Object primitiveValue = gson.fromJson(payload, Object.class);
 
                 Map<String, Object> processVariables = new HashMap<>();
 
-                resultVariable.ifPresentOrElse(
-                        variableName -> {
-                            processVariables.put(variableName, primitiveValue);
-                        },
-                        () -> {
-                            LOGGER.info("No resultValue is set! Check if a process instance id + fallbackVariable is set");
-                            if (processInstanceExists) {
-                                fallbackVariable.ifPresentOrElse(
-                                        fallbackName -> {
-                                            processVariables.put(fallbackName, primitiveValue);
-                                        },
-                                        () -> {
-                                            LOGGER.warn("Neither a resultVariable nor a fallbackVariable is given. So it" +
-                                                    "is impossible to set the primitiveValue = {} as a process variable!",
-                                                    primitiveValue);
-                                        }
-                                );
-                            } else {
-                                processVariables.put(PluginConsts.EngineListener.SIGNAL_START_RESULT_VAR_NAME, primitiveValue);
-                            }
-                        }
-                );
+                determineVariableName(
+                        processInstanceExists,
+                        resultVariable,
+                        fallbackVariable
+                ).ifPresent(variableName -> processVariables.put(variableName, primitiveValue));
 
                 return processVariables;
             }
@@ -118,20 +91,56 @@ public class MqttToSignalService extends AbstractMqttService {
                 Type arrayType = new TypeToken<List<Object>>() {}.getType();
                 List<Object> arrayValue = gson.fromJson(payload, arrayType);
 
-                resultVariable.ifPresentOrElse(
-                        variableName -> {
-                            Map<String, Object> processVariables = new HashMap<>();
-                            processVariables.put(variableName, arrayValue);
-                        },
-                        () -> LOGGER.warn("No resultValue is set! Ignore the ARRAY payload!")
-                );
+                Map<String, Object> processVariables = new HashMap<>();
 
-                break;
+                determineVariableName(
+                        processInstanceExists,
+                        resultVariable,
+                        fallbackVariable
+                ).ifPresent(variableName -> processVariables.put(variableName, arrayValue));
+
+                return processVariables;
             }
             case UNKNOWN: {
                 LOGGER.warn("Given payload = {} is unknown! Ignore it!", payload);
             }
+            default: {
+                return new HashMap<>();
+            }
         }
+    }
+
+    private void sendSignalWithExecutionId(String topic, ValueTypes valueType, String payload, Optional<String> resultValue,
+                                           Optional<String> fallbackValue, String processInstanceId) {
+        final Map<String, Object> processVariables = prepareProcessVariables(
+                payload,
+                valueType,
+                true,
+                resultValue,
+                fallbackValue
+        );
+        LOGGER.info("Send to execution id (process instance id = {}) a signal with name/topic = {} including process " +
+                "variables = {}", processInstanceId, topic, processVariables);
+        runtimeService.createSignalEvent(topic)
+                .executionId(processInstanceId)
+                .setVariables(processVariables)
+                .send();
+    }
+
+    private void sendSignalWithoutExecutionId(String topic, ValueTypes valueType, String payload,
+                                              Optional<String> resultValue) {
+        final Map<String, Object> processVariables = prepareProcessVariables(
+                payload,
+                valueType,
+                false,
+                resultValue,
+                Optional.empty()
+        );
+        LOGGER.info("Send a signal without execution id with name/topic = {} including process " +
+                "variables = {}", topic, processVariables);
+        runtimeService.createSignalEvent(topic)
+                .setVariables(processVariables)
+                .send();
     }
 
     @Override
@@ -141,14 +150,30 @@ public class MqttToSignalService extends AbstractMqttService {
             LOGGER.info("About to handle message for topic = {} with payload = {}", topic, message);
             final ValueTypes valueType = checkValueType(payload);
 
-            final SignalEventReceivedBuilder signalEventBuilder = runtimeService.createSignalEvent(topic);
+            if (tempRuntimeSubscriptions.containsKey(topic)) {
+                tempRuntimeSubscriptions.get(topic).stream()
+                        .forEach(listEntry -> {
+                            final String processInstanceId = listEntry.component1();
+                            final Optional<String> resultVariable = listEntry.component2();
+                            sendSignalWithExecutionId(
+                                    topic,
+                                    valueType,
+                                    payload,
+                                    resultVariable,
+                                    Optional.of(PluginConsts.EngineListener.EXT_PROP_FALLBACK_VAR_NAME),
+                                    processInstanceId
+                            );
+                        });
+            } else {
+                LOGGER.info("No tempRuntimeSubscriptions exists. Nothing to do.");
+            }
 
-            setVariablesToEventBuilder(signalEventBuilder, processVariables);
-
-            signalEventBuilder
-                    .executionId("") // executionId – the id of the process instance or the execution to deliver the signal to
-                    .send();
-
+            sendSignalWithoutExecutionId(
+                    topic,
+                    valueType,
+                    payload,
+                    Optional.empty()
+            );
         } catch (Exception e) {
             throw new HassioException("Could not handle MqttMessage to transfer it to a bpmn signal! Payload = " +
                     payload, e);

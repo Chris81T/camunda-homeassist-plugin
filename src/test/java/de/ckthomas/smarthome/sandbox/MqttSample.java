@@ -26,19 +26,19 @@ public class MqttSample {
 //        processStarterService.start();
 //        System.out.println("hold the instance - manually termination is required");
 
-        MqttToSignalServiceFactory.setConnectionDetailsGlobally(
-                "tcp://jarvis.fritz.box:1883",
-                "hassio",
-                password != null ? password.toCharArray() : null
-        );
-
-        MqttToSignalServiceFactory.constructRuntimeSubscription(
-                "homeassistant/weather/mcu_home/state",
-                "123",
-                "abc",
-                null,
-                Optional.of("resultVariable")
-        );
+//        MqttToSignalServiceFactory.setConnectionDetailsGlobally(
+//                "tcp://jarvis.fritz.box:1883",
+//                "hassio",
+//                password != null ? password.toCharArray() : null
+//        );
+//
+//        MqttToSignalServiceFactory.constructRuntimeSubscription(
+//                "homeassistant/weather/mcu_home/state",
+//                "123",
+//                "abc",
+//                null,
+//                Optional.of("resultVariable")
+//        );
 
 // ACHTUNG: Gegen den gleichen Broker geht leider nicht!
 //        MqttToSignalServiceFactory.constructRuntimeSubscription(

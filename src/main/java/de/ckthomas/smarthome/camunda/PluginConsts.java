@@ -58,6 +58,24 @@ public abstract class PluginConsts {
     public abstract class EngineListener {
         public static final String ELEM_SIGNAL_REF = "signalRef";
         public static final String ELEM_SIGNAL_NAME = "name";
+
+        /**
+         * while using a signal boundary/catch event, it is useful to set the resultVariable (name of the final process
+         * variable, that will be created). Only, if a complex JSON is given, that values will be as process variables
+         * interpreted.
+         */
         public static final String EXT_PROP_RESULT_VAR_NAME = "resultVariable";
+
+        /**
+         * if no resultVariable as extension property is set, following fallback will be used.
+         */
+        public static final String EXT_PROP_FALLBACK_VAR_NAME = "mqttResultVariable";
+
+        /**
+         * E.g. a primitive value will set as process variable with that name, when the process via signal will be
+         * started.
+         */
+        public static final String SIGNAL_START_RESULT_VAR_NAME = "mqttInputVariable";
+
     }
 }
