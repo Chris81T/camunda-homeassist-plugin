@@ -8,10 +8,8 @@ import org.camunda.bpm.engine.runtime.SignalEventReceivedBuilder;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Christian Thomas
@@ -21,7 +19,7 @@ public class MqttToSignalService extends AbstractMqttService {
     /**
      * outer key is the topic
      * List holds a bunch of pair
-     * pair key is a processInstanceId:activityInstanceId combination
+     * pair key is the processInstanceId
      * pair value is the resultVariable name
      */
     private static final Map<String, List<Pair<String, Optional<String>>>> tempRuntimeSubscriptions = new HashMap<>();
@@ -107,44 +105,73 @@ public class MqttToSignalService extends AbstractMqttService {
         }
     }
 
-    private String combineInstanceIds(String processInstanceId, String activityInstanceId) {
-        return new StringBuilder()
-                .append(processInstanceId)
-                .append(":")
-                .append(activityInstanceId)
-                .toString();
-    }
-
     /**
      * Useful to subscribe during process runtime execution a specific topic
      *
      * @param topic
      * @param processInstanceId
-     * @param activityInstanceId
+     * @param resultVariable NOTE: If in the same process two signals listening to the same topic, make sure, that the
+     *                       same resultVariable is defined! It is impossible to differ between signals in the same
+     *                       process instance
      */
-    public void addTempRuntimeSubscription(String topic, String processInstanceId, String activityInstanceId,
-                                           Optional<String> resultVariable) {
+    public void addTempRuntimeSubscription(String topic, String processInstanceId, Optional<String> resultVariable) {
 
-        final String combination = combineInstanceIds(processInstanceId, activityInstanceId);
-        if (!tempRuntimeSubscriptions.containsKey(combination)) {
-            final MqttToSignalService newInstance = getInstance(runtimeService, topic);
-            newInstance.setResultVariableForNonJsonMessages(resultVariable);
-            newInstance.start();
-            tempRuntimeSubscriptions.put(combination, newInstance);
-        } else {
-            LOGGER.warn("MqttToSignalService for id = {} already exist! Do nothing!", combination);
+        boolean mqttSubscriptionNeeded = false;
+
+        if (!tempRuntimeSubscriptions.containsKey(topic)) {
+            LOGGER.info("Record new topic = {} with empty list...", topic);
+            tempRuntimeSubscriptions.put(topic, new ArrayList<>());
+            mqttSubscriptionNeeded = true;
+        }
+
+        List<Pair<String, Optional<String>>> list = tempRuntimeSubscriptions.get(topic);
+        list.stream()
+            .filter(pair -> pair.component1().equals(processInstanceId))
+            .findFirst()
+            .ifPresentOrElse(
+                foundPair -> {
+                    LOGGER.warn("For topic = {} and process instance id = {} an entry already exist! Ignore new one " +
+                            "with resultVariable = {} / foundPair = {}",
+                            topic, processInstanceId, resultVariable, foundPair);
+                }, () -> {
+                    LOGGER.info("Register new entry for topic = {}, process instance id = {} with resultVariable = {}",
+                            topic, processInstanceId, resultVariable);
+                    list.add(new Pair<>(processInstanceId, resultVariable));
+                }
+            );
+
+        if (mqttSubscriptionNeeded) {
+            LOGGER.info("After registering new topic = {} with first process instance id = {} also subscribe topic at " +
+                    "mqtt broker.", topic, processInstanceId);
+            subscribe(topic);
         }
     }
 
-    public void removeTempRuntimeSubscription(String topic, String processInstanceId, String activityInstanceId) {
-        final String combination = combineInstanceIds(processInstanceId, activityInstanceId);
+    public void removeTempRuntimeSubscription(String topic, String processInstanceId) {
+        if (tempRuntimeSubscriptions.containsKey(topic)) {
+            List<Pair<String, Optional<String>>> list = tempRuntimeSubscriptions.get(topic);
+            LOGGER.info("Check list = {} to remove topic = {} in combination with process instance id = {}",
+                    list, topic, processInstanceId);
 
-        if (tempRuntimeSubscriptions.containsKey(combination)) {
-            MqttToSignalService runningInstance = tempRuntimeSubscriptions.remove(combination);
-            runningInstance.unsubscribe(topic);
-            runningInstance.close();
+            List<Pair<String, Optional<String>>> filteredList = list.stream()
+                    .filter(pair -> !pair.component1().equals(processInstanceId))
+                    .collect(Collectors.toList());
+
+            if (filteredList.size() != list.size()) {
+                tempRuntimeSubscriptions.put(topic, filteredList);
+            } else {
+                LOGGER.warn("No entry found for process instance id = {} in combination with topic = {}. Do nothing!",
+                        processInstanceId, topic);
+            }
+
+            if (filteredList.isEmpty()) {
+                LOGGER.info("After removing process instance id = {} from topic = {}, no further entry available. " +
+                        "Remove topic entry and unsubscribe it from mqtt broker.", processInstanceId, topic);
+                tempRuntimeSubscriptions.remove(topic);
+                unsubscribe(topic);
+            }
         } else {
-            LOGGER.warn("Could not unsubscribe/destruct, while given id = {} is unknown! Do nothing!", combination);
+            LOGGER.warn("No entry for topic = {} found! Nothing to remove. Ignore request!", topic);
         }
     }
 
