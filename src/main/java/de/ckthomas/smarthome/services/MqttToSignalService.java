@@ -37,14 +37,6 @@ public class MqttToSignalService extends AbstractMqttService {
                 mqttProcessStartTopic);
     }
 
-    private SignalEventReceivedBuilder setVariablesToEventBuilder(SignalEventReceivedBuilder builder,
-                                                                  Map<String, Object> processVariables) {
-        LOGGER.info("Following process values are prepared to send within the new signal. Variables = {}",
-                processVariables);
-        builder.setVariables(processVariables);
-        return builder;
-    }
-
     private Optional<String> determineVariableName(boolean processInstanceExists, Optional<String> resultVariable,
                                          Optional<String> fallbackVariable) {
 
@@ -196,7 +188,16 @@ public class MqttToSignalService extends AbstractMqttService {
         if (!tempRuntimeSubscriptions.containsKey(topic)) {
             LOGGER.info("Record new topic = {} with empty list...", topic);
             tempRuntimeSubscriptions.put(topic, new ArrayList<>());
-            mqttSubscriptionNeeded = true;
+            boolean givenTopicAlreadyKnownAsStartTopic = Arrays.stream(mqttTopics)
+                    .anyMatch(startTopic -> startTopic.equals(topic));
+
+            if (!givenTopicAlreadyKnownAsStartTopic) {
+                mqttSubscriptionNeeded = true;
+            } else {
+                LOGGER.info("The new given topic = {} is already known as one of the start topics = {}. So no further " +
+                            "subscription is needed.",
+                        topic, mqttTopics);
+            }
         }
 
         List<Pair<String, Optional<String>>> list = tempRuntimeSubscriptions.get(topic);
@@ -243,7 +244,17 @@ public class MqttToSignalService extends AbstractMqttService {
                 LOGGER.info("After removing process instance id = {} from topic = {}, no further entry available. " +
                         "Remove topic entry and unsubscribe it from mqtt broker.", processInstanceId, topic);
                 tempRuntimeSubscriptions.remove(topic);
-                unsubscribe(topic);
+
+                boolean givenTopicAlreadyKnownAsStartTopic = Arrays.stream(mqttTopics)
+                        .anyMatch(startTopic -> startTopic.equals(topic));
+
+                if (!givenTopicAlreadyKnownAsStartTopic) {
+                    unsubscribe(topic);
+                } else {
+                    LOGGER.info("The new given topic = {} is already known as one of the start topics = {}. So no " +
+                                "unsubscription is needed!",
+                            topic, mqttTopics);
+                }
             }
         } else {
             LOGGER.warn("No entry for topic = {} found! Nothing to remove. Ignore request!", topic);
