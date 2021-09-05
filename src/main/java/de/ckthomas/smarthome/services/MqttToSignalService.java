@@ -114,37 +114,43 @@ public class MqttToSignalService extends AbstractMqttService {
         );
 
         // TODO actually no execution is found?!?
-//        Optional<Execution> foundExecution = runtimeService.createExecutionQuery()
-//                .signalEventSubscriptionName(topic)
-//                .list()
-//                .stream()
-//                .map(execution -> {
-//                    LOGGER.info("Found executions. This is one = {} / {} / {} / {}",
-//                            execution.getId(), execution.getProcessInstanceId(), execution.isSuspended(), execution.isEnded());
-//                    return execution;
-//                })
-//                .filter(execution -> execution.getProcessInstanceId().equals(processInstanceId))
-//                .findFirst();
-//
-//        foundExecution.ifPresentOrElse(execution -> {
-//            LOGGER.info("Send to execution id (process instance id = {}) a signal with name/topic = {} including process " +
-//                    "variables = {}, found execution =  {}", processInstanceId, topic, processVariables, execution);
-//
-//            runtimeService.createSignalEvent(topic)
-//                    .executionId(execution.getId())
-//                    .setVariables(processVariables)
-//                    .send();
-//        }, () -> {
-//            LOGGER.warn("No execution was found for topic = {} / process instance id = {}", topic, processInstanceId);
-//        });
+        Optional<Execution> foundExecution = runtimeService.createExecutionQuery()
+                .signalEventSubscriptionName(topic)
+                .list()
+                .stream()
+          // ?!?! zum Entzerren?!      .wait(100)
+                .map(execution -> {
+                    LOGGER.info("Found executions. This is one = {} / {} / {} / {}",
+                            execution.getId(), execution.getProcessInstanceId(), execution.isSuspended(), execution.isEnded());
+                    return execution;
+                })
+                .filter(execution -> execution.getProcessInstanceId().equals(processInstanceId))
+                .findFirst();
 
-        LOGGER.info("Send to execution id (process instance id = {}) a signal with name/topic = {} including process " +
-                "variables = {}, found execution =  {}", processInstanceId, topic, processVariables, processInstanceId);
+        // GEHT NICHT, es gibt mehrere ProcessInstID Eintröge!
+//        Optional<Execution> foundExecution = Optional.ofNullable(runtimeService.createExecutionQuery()
+//                .processInstanceId(processInstanceId)
+//                .singleResult());
 
-        runtimeService.createSignalEvent(topic)
-                .executionId(processInstanceId)
-                .setVariables(processVariables)
-                .send();
+        foundExecution.ifPresentOrElse(execution -> {
+            LOGGER.info("Send to execution id (process instance id = {}) a signal with name/topic = {} including process " +
+                    "variables = {}, found execution =  {}", processInstanceId, topic, processVariables, execution);
+
+            runtimeService.createSignalEvent(topic)
+                    .executionId(execution.getId())
+                    .setVariables(processVariables)
+                    .send();
+        }, () -> {
+            LOGGER.warn("No execution was found for topic = {} / process instance id = {}", topic, processInstanceId);
+        });
+
+//        LOGGER.info("Send to execution id (process instance id = {}) a signal with name/topic = {} including process " +
+//                "variables = {}, found execution =  {}", processInstanceId, topic, processVariables, processInstanceId);
+//
+//        runtimeService.createSignalEvent(topic)
+//                .executionId(processInstanceId)
+//                .setVariables(processVariables)
+//                .send();
 
     }
 

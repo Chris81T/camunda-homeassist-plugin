@@ -19,7 +19,7 @@ public class MqttExecutionStartListener extends AbstractMqttExecutionListener {
 
     @Override
     public void notify(DelegateExecution execution) throws Exception {
-        final String processInstanceId = execution.getId(); // TEST - LAUT DOKU KÖNNTE ES PASSEN...
+        final String processInstanceId = execution.getProcessInstanceId();
         final String topic = getSignalName(execution);
         final Optional<String> resultVariable = getResultVariableName(execution);
         startListeningToTopic(topic, processInstanceId, resultVariable);
