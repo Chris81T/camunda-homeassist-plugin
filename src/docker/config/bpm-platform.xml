@@ -23,7 +23,11 @@
             <property name="historyTimeToLive">P365D</property>
             <property name="databaseSchemaUpdate">true</property>
             <property name="authorizationEnabled">true</property>
-            <property name="jobExecutorDeploymentAware">true</property>
+
+            <!--
+            relevant for deployments over the rest api (modeler), so the job executor will execute async jobs
+            -->
+            <property name="jobExecutorDeploymentAware">false</property>
             <property name="historyCleanupBatchWindowStartTime">00:01</property>
         </properties>
 
