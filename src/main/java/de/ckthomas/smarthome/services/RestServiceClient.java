@@ -1,6 +1,5 @@
 package de.ckthomas.smarthome.services;
 
-import de.ckthomas.smarthome.camunda.connectors.homeassistant.common.CommonConnector;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,9 +10,9 @@ import java.io.IOException;
  * This facade provides common logic for a simpler usage.
  * @author Christian Thomas
  */
-public class RestService {
+public class RestServiceClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RestService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RestServiceClient.class);
 
     public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
@@ -29,7 +28,7 @@ public class RestService {
     /**
      * Use the factory to get an instance of this.
      */
-    RestService(String basePath, String authKey, String authValue) {
+    RestServiceClient(String basePath, String authKey, String authValue) {
         this.basePath = basePath;
         this.authKey = authKey;
         this.authValue = authValue;

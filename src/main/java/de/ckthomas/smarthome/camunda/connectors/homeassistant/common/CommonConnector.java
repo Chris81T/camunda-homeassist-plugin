@@ -3,8 +3,8 @@ package de.ckthomas.smarthome.camunda.connectors.homeassistant.common;
 import com.google.gson.Gson;
 import de.ckthomas.smarthome.camunda.PluginConsts;
 import de.ckthomas.smarthome.exceptions.HassioException;
-import de.ckthomas.smarthome.services.RestService;
-import de.ckthomas.smarthome.services.RestServiceFactory;
+import de.ckthomas.smarthome.services.RestServiceClient;
+import de.ckthomas.smarthome.services.RestServiceClientFactory;
 import okhttp3.Response;
 import org.camunda.connect.impl.AbstractConnector;
 import org.camunda.connect.spi.ConnectorResponse;
@@ -86,14 +86,14 @@ public class CommonConnector extends AbstractConnector<CommonRequest, CommonResp
      * After that, simply the existing service instance will be returned regardless some different values from
      * different processes.
      */
-    private RestService getRestService(Map<String, Object> requestParameters) {
-        if (RestServiceFactory.isNotInstantiated()) {
+    private RestServiceClient getRestServiceClient(Map<String, Object> requestParameters) {
+        if (RestServiceClientFactory.isNotInstantiated()) {
             final String basePath = checkParam(this.basePath, PluginConsts.Common.BASE_PATH, requestParameters);
             final String authKey = checkParam(this.authKey, PluginConsts.Common.AUTH_KEY, requestParameters);
             final String authValue = checkParam(this.authValue, PluginConsts.Common.AUTH_VAL, requestParameters);
-            return RestServiceFactory.getInstance(basePath, authKey, authValue);
+            return RestServiceClientFactory.getInstance(basePath, authKey, authValue);
         } else {
-            return RestServiceFactory.getInstance();
+            return RestServiceClientFactory.getInstance();
         }
     }
 
@@ -107,8 +107,8 @@ public class CommonConnector extends AbstractConnector<CommonRequest, CommonResp
                     url,
                     jsonBody);
 
-            RestService service = getRestService(requestParameters);
-            Response serviceResponse = service.execute(url, jsonBody);
+            RestServiceClient serviceClient = getRestServiceClient(requestParameters);
+            Response serviceResponse = serviceClient.execute(url, jsonBody);
 
             if (serviceResponse.isSuccessful()) {
                 CommonResponse response = new CommonResponse(serviceResponse);

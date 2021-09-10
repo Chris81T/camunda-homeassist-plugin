@@ -16,3 +16,6 @@ MAINTAINER Christian Thomas <christian@ckthomas.de>
 
 ### DOCU's
 # https://docs.camunda.org/manual/7.15/user-guide/spring-boot-integration/configuration/
+# https://github.com/camunda-consulting/code/blob/master/snippets/run-engine-plugin/src/main/java/org/company/camunda/MySpringConfig.java
+# https://forum.camunda.org/t/extending-camunda-bpm-run-docker-with-custom-listener/24656/8
+# https://github.com/rob2universe/bpmrun-add-to-dockerimg
